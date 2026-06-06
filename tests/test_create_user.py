@@ -1,21 +1,31 @@
-def test_create_user_success(client):
-    payload = {
-        "name": "Alex",
-        "email": "alex@gmail.com",
-        "age": 25
-    }
-
-    response = client.post("/users", json=payload)
+def test_create_user_success(client, valid_user_payload):
+    response = client.post("/users", json=valid_user_payload)
+    body = response.json()
     
-    assert response.status_code == 200
-    assert response.json() == {"message": "User received"}
+    assert response.status_code == 201
 
-def test_create_user_name_too_short(client):
-    payload = {
-        "name": "A",
-        "email": "alex@gmail.com",
-        "age": 25
-    }
+    assert len(body) == 4
+
+    assert "id" in body
+    assert "name" in body
+    assert "email" in body
+    assert "age" in body
+
+    assert isinstance(body["id"], int)
+    assert isinstance(body["name"], str)
+    assert isinstance(body["email"], str)
+    assert isinstance(body["age"], int)
+
+    assert body["id"] > 0
+    assert body["name"] == valid_user_payload["name"]
+    assert body["email"] == valid_user_payload["email"]
+    assert body["age"] == valid_user_payload["age"]
+    
+
+
+def test_create_user_name_too_short(client, valid_user_payload):
+    payload = valid_user_payload.copy()
+    payload["name"] = "A"
 
     response = client.post("/users", json=payload)
     body = response.json()
