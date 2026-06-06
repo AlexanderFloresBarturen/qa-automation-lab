@@ -19,8 +19,8 @@ def register_user(
 
     if existing_user:
         raise HTTPException(
-            status_code=409,
-            detail="Email already exists"
+            status_code = 409,
+            detail = "Email already exists"
         )
     
     # Registrar el usuario
@@ -35,3 +35,20 @@ def register_user(
     db.refresh(new_user)
 
     return new_user
+
+@router.get("/{user_id}", response_model=UserResponse, status_code=200)
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    user = db.query(UserModel).filter(
+        UserModel.id == user_id
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code = 404,
+            detail = "User not found"
+        )
+    
+    return user
