@@ -14,7 +14,8 @@ def register_user(
 ):
     # Consultar si existe un usuario con ese correo
     existing_user = db.query(UserModel).filter(
-        UserModel.email == user.email
+        UserModel.email == user.email,
+        UserModel.is_active.is_(True)
     ).first()
 
     if existing_user:
@@ -42,7 +43,8 @@ def get_user(
     db: Session = Depends(get_db)
 ):
     user = db.query(UserModel).filter(
-        UserModel.id == user_id
+        UserModel.id == user_id,
+        UserModel.is_active.is_(True)
     ).first()
 
     if not user:
@@ -52,3 +54,25 @@ def get_user(
         )
     
     return user
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    user = db.query(UserModel).filter(
+        UserModel.id == user_id,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code = 404,
+            detail = "User not found"
+        )
+    
+    user.is_active = False
+
+    db.commit()
+
+    return

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from app.database import Base
 
 # Define la tabla users
@@ -9,7 +9,8 @@ class UserModel(Base):
 
     name = Column(String)
 
-    email = Column(String, unique=True)
+    email = Column(String)
 
     age = Column(Integer)
     
+    is_active = Column(Boolean, default=True)
