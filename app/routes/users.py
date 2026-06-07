@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
 from app.schemas import UserCreate, UserResponse
@@ -39,7 +39,7 @@ def register_user(
 
 @router.get("/{user_id}", response_model=UserResponse, status_code=200)
 def get_user(
-    user_id: int,
+    user_id: int = Path(gt=0),
     db: Session = Depends(get_db)
 ):
     user = db.query(UserModel).filter(
