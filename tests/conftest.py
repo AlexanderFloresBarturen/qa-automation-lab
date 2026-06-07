@@ -19,5 +19,13 @@ def valid_user_payload():
     return{
         "name": "Alex",
         "email": f"{uuid.uuid4()}@gmail.com",
-        "age": random.randint(18,65)
+        "age": 25
     }
+
+@pytest.fixture
+def created_user(client, valid_user_payload):
+    response = client.post("/users", json=valid_user_payload)
+
+    assert response.status_code == 201
+
+    return response.json()
