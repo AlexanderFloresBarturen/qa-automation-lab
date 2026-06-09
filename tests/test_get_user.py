@@ -18,13 +18,13 @@ def test_get_user_success(client, created_user):
 
     assert body["id"] > 0
 
-    assert body["id"] == body["id"]
-    assert body["name"] == body["name"]
-    assert body["email"] == body["email"]
-    assert body["age"] == body["age"]
+    assert body["id"] == created_user["id"]
+    assert body["name"] == created_user["name"]
+    assert body["email"] == created_user["email"]
+    assert body["age"] == created_user["age"]
 
 def test_get_user_not_found(client):
-    response = client.get("/users/0")
+    response = client.get("/users/9999")
     body = response.json()
 
     assert response.status_code == 404

@@ -23,6 +23,27 @@ def valid_user_payload():
     }
 
 @pytest.fixture
+def valid_update_payload():
+    return{
+        "name": "Pepe",
+        "email": f"{uuid.uuid4()}@hotmail.com",
+        "age": 42
+    }
+
+@pytest.fixture
+def user_payload():
+    def _user_payload(
+            name="Pepe",
+            age=49
+    ):
+        return {
+            "name": name,
+            "email": f"{uuid.uuid4()}@gmail.com",
+            "age": age
+        }
+    return _user_payload
+
+@pytest.fixture
 def created_user(client, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
-from app.schemas import UserCreate, UserResponse
-from app.database import get_db
+from app.schemas import UserCreate, UserResponse, UserUpdate
+from app.dependencies import get_db
 from app.models import UserModel
 
 router = APIRouter()
@@ -76,3 +76,41 @@ def delete_user(
     db.commit()
 
     return
+
+@router.put("/{user_id}", response_model=UserResponse, status_code=200)
+def update_user(
+    user: UserUpdate,
+    user_id: int = Path(..., gt=0),
+    db: Session = Depends(get_db)
+):
+    user_to_update = db.query(UserModel).filter(
+        UserModel.id == user_id,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if not user_to_update:
+        raise HTTPException(
+            status_code = 404,
+            detail = "User not found"
+        )
+    
+    existing_email = db.query(UserModel).filter(
+        UserModel.email == user.email,
+        UserModel.id != user_id,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if existing_email:
+        raise HTTPException(
+            status_code = 409,
+            detail = "Email already exists"
+        )
+    
+    user_to_update.name = user.name
+    user_to_update.email = user.email
+    user_to_update.age = user.age
+
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
