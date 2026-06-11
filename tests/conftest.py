@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient   # Permite probars APIs sin levantar Uvicorn.
 
 from app.main import app
+from app.database import SessionLocal
 
 import pytest
 import uuid
@@ -50,3 +51,9 @@ def created_user(client, valid_user_payload):
     assert response.status_code == 201
 
     return response.json()
+
+@pytest.fixture
+def db():
+    db = SessionLocal()
+    yield db
+    db.close()

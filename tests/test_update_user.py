@@ -56,7 +56,6 @@ def test_update_user_duplicate_email(client, user_payload, valid_update_payload)
 
     update_payload = valid_update_payload.copy()
     update_payload["email"] = user_first["email"]
-    print(f"Second: {body_post_second}")
     put_response = client.put(f"/users/{body_post_second['id']}", json=update_payload)
     body_put = put_response.json()
 
