@@ -89,6 +89,20 @@ Características:
 * Cambia el campo `is_active` a `False`
 * Retorna HTTP 204
 
+##### Actualiza Usuario
+
+```http
+PUT /users/{user_id}
+```
+
+Características
+
+* Actualiza nombre, email y edad
+* Mantiene el mismo ID
+* Retorna 404 cuando el usuario no existe o fue eliminado lógicamente
+* Retorna 409 cuando el email ya está siendo utilizado por otro usuario activo
+* No crea registros nuevos durante la actualización
+
 ---
 
 ## Reglas de Negocio
@@ -127,8 +141,11 @@ SQLite
 ### Fixtures
 
 * client
+* db
 * valid_user_payload
+* valid_update_payload
 * created_user
+* user_payload
 
 ### Cobertura Actual
 
@@ -154,6 +171,20 @@ SQLite
 * Usuario inexistente
 * Eliminación doble
 
+#### PUT /users/{id}
+
+* Actualización exitosa
+* Usuario inexistente
+* Usuario eliminado
+* Email duplicado
+
+#### Persistencia SQLite
+
+* Usuario guardado correctamente en la base de datos
+* Actualización reflejada correctamente en la base de datos
+* Soft Delete reflejado correctamente en la base de datos
+* Verificación de que UPDATE no crea registros adicionales
+
 ---
 
 ## Conceptos QA Aprendidos
@@ -172,6 +203,8 @@ SQLite
 * Validación de estructura JSON
 * Validación de tipos de datos
 * Validación de persistencia
+* Pruebas CRUD
+* Pruebas de integración de endpoints
 
 ### Pytest
 
@@ -185,6 +218,9 @@ SQLite
 * Persistencia
 * Integridad de datos
 * Soft Delete
+* Validación directa de persistencia
+* Validación de UPDATE sin inserción de registros
+* Validación de Soft Delete desde la BD
 
 ---
 
@@ -244,8 +280,10 @@ qa-automation-lab/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_create_user.py
+│   ├── test_database.py
+│   ├── test_delete_user.py
 │   ├── test_get_user.py
-│   └── test_delete_user.py
+│   └── test_update_user.py
 │
 ├── requirements.txt
 └── README.md
@@ -261,16 +299,19 @@ qa-automation-lab/
 * [x] Persistencia SQLite
 * [x] POST User
 * [x] GET User
+* [x] PUT User
 * [x] DELETE User (Soft Delete)
+* [x] Reutilización de email tras Soft Delete
 * [x] Validaciones de entrada
 * [x] Fixtures reutilizables
+* [x] Validación de persistencia desde tests
 
 ### Sprint 2 - Gestión de Usuarios Avanzada
 
-* [ ] PUT User
-* [ ] Reutilización de email tras Soft Delete
-* [ ] Validaciones avanzadas
-* [ ] Persistencia validada desde tests
+* [ ] PATCH User
+* [ ] Parametrización de pruebas
+* [ ] Base de datos de pruebas aisladas
+* [ ] Refactorización de fixtures
 
 ### Sprint 3 - Autenticación
 
@@ -307,3 +348,7 @@ qa-automation-lab/
 * Los fixtures pueden contener validaciones y lógica de preparación de datos.
 * Los IDs inválidos deberían validarse explícitamente mediante restricciones de entrada.
 * La calidad también se construye refinando requisitos, no solo encontrando bugs.
+* Los tests de integración validan el flujo completo entre endpoints.
+* Los tests de persistencia validan directamente el estado de la base de datos.
+* Consultar la API y consultar la base de datos son estrategias complementarias de validación.
+* Un UPDATE debe validar que los datos cambian sin incrementar la cantidad de registros.
