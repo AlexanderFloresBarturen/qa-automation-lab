@@ -1,3 +1,6 @@
+from tests.helpers import assert_valid_user_response, assert_user_not_found_response, assert_duplicate_email_response
+
+#region POSITIVOS
 def test_update_user_success(client, created_user, valid_update_payload):
     update_response = client.put(f"/users/{created_user['id']}", json=valid_update_payload)
     body_update = update_response.json()
@@ -8,19 +11,7 @@ def test_update_user_success(client, created_user, valid_update_payload):
     assert update_response.status_code == 200
     assert get_response.status_code == 200
 
-    assert len(body_update) == 4
-
-    assert "id" in body_update
-    assert "name" in body_update
-    assert "email" in body_update
-    assert "age" in body_update
-
-    assert isinstance(body_update["id"], int)
-    assert isinstance(body_update["name"], str)
-    assert isinstance(body_update["email"], str)
-    assert isinstance(body_update["age"], int)
-
-    assert body_update["id"] > 0
+    assert_valid_user_response(body_get)
 
     assert body_update["id"] == created_user["id"]
 
@@ -33,17 +24,16 @@ def test_update_user_success(client, created_user, valid_update_payload):
     assert body_get["email"] == valid_update_payload["email"]
     assert body_get["age"] == valid_update_payload["age"]
 
+#endregion
+
+#region NEGATIVOS
 def test_update_user_not_found(client, valid_update_payload):
     response = client.put(f"/users/{9999}", json=valid_update_payload)
     body = response.json()
 
     assert response.status_code == 404
 
-    assert len(body) == 1
-
-    assert "detail" in body
-
-    assert body["detail"] == "User not found"
+    assert_user_not_found_response(body)
 
 def test_update_user_duplicate_email(client, user_payload, valid_update_payload):
     user_first = user_payload()
@@ -61,11 +51,7 @@ def test_update_user_duplicate_email(client, user_payload, valid_update_payload)
 
     assert put_response.status_code == 409
 
-    assert len(body_put) == 1
-
-    assert "detail" in body_put
-
-    assert body_put["detail"] == "Email already exists"
+    assert_duplicate_email_response(body_put)
 
 def test_update_deleted_user(client, created_user, valid_update_payload):
     delete_response = client.delete(f"/users/{created_user['id']}")
@@ -75,9 +61,6 @@ def test_update_deleted_user(client, created_user, valid_update_payload):
 
     assert update_response.status_code == 404
 
-    assert len(body_update) == 1
+    assert_user_not_found_response(body_update)
 
-    assert "detail" in body_update
-
-    assert body_update["detail"] == "User not found"
-
+#endregion

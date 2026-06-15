@@ -1,26 +1,21 @@
+from tests.helpers import assert_valid_user_response
+
+#region POSITIVOS
 def test_create_user_success(client, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
     body = response.json()
     
     assert response.status_code == 201
 
-    assert len(body) == 4
+    assert_valid_user_response(body)
 
-    assert "id" in body
-    assert "name" in body
-    assert "email" in body
-    assert "age" in body
-
-    assert isinstance(body["id"], int)
-    assert isinstance(body["name"], str)
-    assert isinstance(body["email"], str)
-    assert isinstance(body["age"], int)
-
-    assert body["id"] > 0
     assert body["name"] == valid_user_payload["name"]
     assert body["email"] == valid_user_payload["email"]
     assert body["age"] == valid_user_payload["age"]
 
+#endregion
+
+#region NEGATIVOS
 def test_create_user_name_too_short(client, valid_user_payload):
     payload = valid_user_payload.copy()
     payload["name"] = "A"
@@ -71,3 +66,5 @@ def test_create_user_empty_payload(client):
     assert body["detail"][0]["loc"] == ["body", "name"]
     assert body["detail"][1]["loc"] == ["body", "email"]
     assert body["detail"][2]["loc"] == ["body", "age"]
+
+#endregion

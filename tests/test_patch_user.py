@@ -1,5 +1,7 @@
 import pytest
 
+from tests.helpers import assert_valid_user_response, assert_user_not_found_response, assert_duplicate_email_response
+
 #region POSITIVOS
 def test_patch_user_name_success(created_user, patch_user):
     patch_response = patch_user(id=created_user["id"], name=True)
@@ -7,17 +9,7 @@ def test_patch_user_name_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] != body_patch["name"]
@@ -30,17 +22,7 @@ def test_patch_user_email_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] == body_patch["name"]
@@ -53,17 +35,7 @@ def test_patch_user_age_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] == body_patch["name"]
@@ -76,17 +48,7 @@ def test_patch_user_name_email_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] != body_patch["name"]
@@ -99,17 +61,7 @@ def test_patch_user_name_age_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] != body_patch["name"]
@@ -122,17 +74,7 @@ def test_patch_user_email_age_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] == body_patch["name"]
@@ -145,17 +87,7 @@ def test_patch_user_full_success(created_user, patch_user):
 
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert created_user["id"] == body_patch["id"]
     assert created_user["name"] != body_patch["name"]
@@ -182,17 +114,7 @@ def test_patch_reuse_email(client, user_payload):
     assert delete_response.status_code == 204
     assert patch_response.status_code == 200
 
-    assert len(body_patch) == 4
-
-    assert "id" in body_patch
-    assert "name" in body_patch
-    assert "email" in body_patch
-    assert "age" in body_patch
-
-    assert isinstance(body_patch["id"], int)
-    assert isinstance(body_patch["age"], int)
-    assert isinstance(body_patch["name"], str)
-    assert isinstance(body_patch["email"], str)
+    assert_valid_user_response(body_patch)
 
     assert body_post_second["id"] == body_patch["id"]
     assert body_post_second["name"] == body_patch["name"]
@@ -210,11 +132,7 @@ def test_patch_user_not_found(patch_user):
 
     assert patch_response.status_code == 404
 
-    assert len(body_patch) == 1
-
-    assert "detail" in body_patch
-
-    assert body_patch["detail"] == "User not found"
+    assert_user_not_found_response(body_patch)
 
 def test_patch_deleted_user(client, created_user, patch_user):
     delete_response = client.delete(f"/users/{created_user['id']}")
@@ -225,11 +143,7 @@ def test_patch_deleted_user(client, created_user, patch_user):
     assert delete_response.status_code == 204
     assert patch_response.status_code == 404
 
-    assert len(body_patch) == 1
-
-    assert "detail" in body_patch
-
-    assert body_patch["detail"] == "User not found"
+    assert_user_not_found_response(body_patch)
 
 def test_patch_user_duplicate_email(client, user_payload):
     user_first = user_payload()
@@ -247,11 +161,7 @@ def test_patch_user_duplicate_email(client, user_payload):
 
     assert patch_response.status_code == 409
 
-    assert len(body_patch) == 1
-
-    assert "detail" in body_patch
-
-    assert body_patch["detail"] == "Email already exists"
+    assert_duplicate_email_response(body_patch)
 
 def test_patch_empty_payload(client, created_user):
     patch_response = client.patch(f"/users/{created_user['id']}", json={})
