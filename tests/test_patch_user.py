@@ -1,4 +1,6 @@
-# POSITIVOS
+import pytest
+
+#region POSITIVOS
 def test_patch_user_name_success(created_user, patch_user):
     patch_response = patch_user(id=created_user["id"], name=True)
     body_patch = patch_response.json()
@@ -199,7 +201,9 @@ def test_patch_reuse_email(client, user_payload):
 
     assert body_patch["email"] == body_post_first["email"]
 
-# NEGATIVOS
+#endregion
+
+#region NEGATIVOS
 def test_patch_user_not_found(patch_user):
     patch_response = patch_user(id=9999, name = True)
     body_patch = patch_response.json()
@@ -262,47 +266,47 @@ def test_patch_empty_payload(client, created_user):
     assert body_patch["detail"][0]["type"] == "value_error"
     assert body_patch["detail"][0]["msg"] == "Value error, At least one field is required"
 
-def test_patch_invalid_name(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"name": "z"})
+#endregion
+
+#region Parametrización
+"""
+Parametrización sirve para ejecutar un mismo test varias veces
+con distintos conjuntos de datos, en este caso:
+- test_patch_invalid_name
+- test_patch_invalid_email
+- test_patch_invalid_age
+"""
+@pytest.mark.parametrize(
+    "payload, error_type, error_loc",
+    [
+        ({"name": "A"}, "string_too_short", ["body", "name"]),
+        ({"email": "correo"}, "value_error", ["body", "email"]),
+        ({"age": 5}, "greater_than_equal", ["body", "age"])
+    ]
+)
+def test_patch_invalid_fields(client, created_user, payload, error_type, error_loc):
+    patch_response = client.patch(f"/users/{created_user['id']}", json=payload)
     body_patch = patch_response.json()
 
-    assert patch_response.status_code == 422
+    assert patch_response. status_code == 422
 
     assert "detail" in body_patch
     assert "type" in body_patch["detail"][0]
     assert "loc" in body_patch["detail"][0]
 
-    assert body_patch["detail"][0]["type"] == "string_too_short"
-    assert body_patch["detail"][0]["loc"] == ["body", "name"]
+    assert body_patch["detail"][0]["type"] == error_type
+    assert body_patch["detail"][0]["loc"] == error_loc
 
-def test_patch_invalid_email(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"email": "qwerty"})
-    body_patch = patch_response.json()
-
-    assert patch_response.status_code == 422
-
-    assert "detail" in body_patch
-    assert "type" in body_patch["detail"][0]
-    assert "loc" in body_patch["detail"][0]
-
-    assert body_patch["detail"][0]["type"] == "value_error"
-    assert body_patch["detail"][0]["loc"] == ["body", "email"]
-
-def test_patch_invalid_age(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"age": 5})
-    body_patch = patch_response.json()
-
-    assert patch_response.status_code == 422
-
-    assert "detail" in body_patch
-    assert "type" in body_patch["detail"][0]
-    assert "loc" in body_patch["detail"][0]
-
-    assert body_patch["detail"][0]["type"] == "greater_than_equal"
-    assert body_patch["detail"][0]["loc"] == ["body", "age"]
-
-def test_patch_null_name(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"name": None})
+@pytest.mark.parametrize(
+    "payload, msg",
+    [
+        ({"name": None}, "Value error, Field name cannot be null"),
+        ({"email": None}, "Value error, Field email cannot be null"),
+        ({"age": None}, "Value error, Field age cannot be null")
+    ]
+)
+def test_patch_null_fields(client, created_user, payload, msg):
+    patch_response = client.patch(f"/users/{created_user['id']}", json=payload)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 422
@@ -312,30 +316,6 @@ def test_patch_null_name(client, created_user):
     assert "msg" in body_patch["detail"][0]
 
     assert body_patch["detail"][0]["type"] == "value_error"
-    assert body_patch["detail"][0]["msg"] == "Value error, Field name cannot be null"
+    assert body_patch["detail"][0]["msg"] == msg
 
-def test_patch_null_email(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"email": None})
-    body_patch = patch_response.json()
-
-    assert patch_response.status_code == 422
-
-    assert "detail" in body_patch
-    assert "type" in body_patch["detail"][0]
-    assert "msg" in body_patch["detail"][0]
-
-    assert body_patch["detail"][0]["type"] == "value_error"
-    assert body_patch["detail"][0]["msg"] == "Value error, Field email cannot be null"
-
-def test_patch_null_age(client, created_user):
-    patch_response = client.patch(f"/users/{created_user['id']}", json={"age": None})
-    body_patch = patch_response.json()
-
-    assert patch_response.status_code == 422
-
-    assert "detail" in body_patch
-    assert "type" in body_patch["detail"][0]
-    assert "msg" in body_patch["detail"][0]
-
-    assert body_patch["detail"][0]["type"] == "value_error"
-    assert body_patch["detail"][0]["msg"] == "Value error, Field age cannot be null"
+#endregion
