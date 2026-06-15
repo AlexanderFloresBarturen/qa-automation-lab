@@ -89,7 +89,7 @@ Características:
 * Cambia el campo `is_active` a `False`
 * Retorna HTTP 204
 
-##### Actualiza Usuario
+##### Actualizar Usuario
 
 ```http
 PUT /users/{user_id}
@@ -103,6 +103,23 @@ Características
 * Retorna 409 cuando el email ya está siendo utilizado por otro usuario activo
 * No crea registros nuevos durante la actualización
 
+##### Actualizar Usuario Parcialmente
+```http
+PATCH /users/{user_id}
+```
+
+Características:
+
+* Permite actualizar uno o más campos del usuario
+* Los campos son opcionales
+* No permite payload vacío
+* No permite valores null
+* Mantiene el mismo ID
+* Retorna 404 cuando el usuario no existe o fue eliminado lógicamente
+* Retorna 409 cuando el email ya está siendo utilizado por otro usuario activo
+* Permite reutilizar emails pertenecientes a usuarios eliminados lógicamente
+* Actualiza únicamente los campos enviados
+
 ---
 
 ## Reglas de Negocio
@@ -115,6 +132,9 @@ Características
 * No pueden existir dos usuarios activos con el mismo email.
 * Un usuario eliminado lógicamente puede reutilizar su email.
 * Los usuarios inactivos no pueden ser consultados mediante la API.
+* Los campos enviados mediante PATCH no pueden tener valor null.
+* Un PATCH debe contener al menos un campo para actualizar.
+* PATCH actualiza únicamente los campos enviados por el cliente.
 
 ---
 
@@ -146,6 +166,7 @@ SQLite
 * valid_update_payload
 * created_user
 * user_payload
+* patch_user
 
 ### Cobertura Actual
 
@@ -178,12 +199,35 @@ SQLite
 * Usuario eliminado
 * Email duplicado
 
+#### PATCH /users/{id}
+
+* Actualizar únicamente name
+* Actualizar únicamente email
+* Actualizar únicamente age
+* Actualizar name y email
+* Actualizar name y age
+* Actualizar email y age
+* Actualizar todos los campos
+* Usuario inexistente
+* Usuario eliminado
+* Email duplicado
+* Reutilización de email tras Soft Delete
+* Payload vacío
+* Name inválido
+* Email inválido
+* Age inválido
+* Name null
+* Email null
+* Age null
+
 #### Persistencia SQLite
 
 * Usuario guardado correctamente en la base de datos
 * Actualización reflejada correctamente en la base de datos
+* Actualización parcial reflejada correctamente en la base de datos
 * Soft Delete reflejado correctamente en la base de datos
 * Verificación de que UPDATE no crea registros adicionales
+* Verificación de que PATCH no crea registros adicionales
 
 ---
 
@@ -205,6 +249,8 @@ SQLite
 * Validación de persistencia
 * Pruebas CRUD
 * Pruebas de integración de endpoints
+* Pruebas de actualización parcial (PATCH)
+* Validación de reglas de negocio
 
 ### Pytest
 
@@ -221,6 +267,8 @@ SQLite
 * Validación directa de persistencia
 * Validación de UPDATE sin inserción de registros
 * Validación de Soft Delete desde la BD
+* Verificación de UPDATE vs INSERT
+* Verificación de PATCH vs INSERT
 
 ---
 
@@ -283,6 +331,7 @@ qa-automation-lab/
 │   ├── test_database.py
 │   ├── test_delete_user.py
 │   ├── test_get_user.py
+│   ├── test_patch_user.py
 │   └── test_update_user.py
 │
 ├── requirements.txt
@@ -305,13 +354,15 @@ qa-automation-lab/
 * [x] Validaciones de entrada
 * [x] Fixtures reutilizables
 * [x] Validación de persistencia desde tests
+* [x] PATCH User
 
-### Sprint 2 - Gestión de Usuarios Avanzada
+### Sprint 2 - Calidad de Automatización
 
-* [ ] PATCH User
 * [ ] Parametrización de pruebas
 * [ ] Base de datos de pruebas aisladas
 * [ ] Refactorización de fixtures
+* [ ] Helpers de validación de respuestas
+* [ ] Cobertura de código
 
 ### Sprint 3 - Autenticación
 
@@ -351,4 +402,10 @@ qa-automation-lab/
 * Los tests de integración validan el flujo completo entre endpoints.
 * Los tests de persistencia validan directamente el estado de la base de datos.
 * Consultar la API y consultar la base de datos son estrategias complementarias de validación.
-* Un UPDATE debe validar que los datos cambian sin incrementar la cantidad de registros.
+* PATCH y PUT resuelven problemas distintos.
+* PATCH debe actualizar únicamente los campos enviados.
+* Las reglas de validación pertenecen preferentemente a los schemas de Pydantic.
+* `model_dump(exclude_unset=True)` permite identificar únicamente los campos enviados por el cliente.
+* `setattr()` permite implementar actualizaciones dinámicas de modelos.
+* La reutilización de emails después de un Soft Delete debe ser considerada explícitamente en las reglas de negocio.
+* Los tests deben validar que una actualización modifica registros existentes y no genera registros nuevos.
