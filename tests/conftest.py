@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import Base
 from app.dependencies import get_db
+from app.models import UserModel
 
 import pytest
 import uuid
@@ -49,6 +50,11 @@ def setup_test_database():
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
+
+@pytest.fixture(autouse=True)
+def clean_database(db):
+    db.query(UserModel).delete()
+    db.commit()
 
 #endregion
 
