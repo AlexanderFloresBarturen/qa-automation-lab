@@ -42,7 +42,24 @@ def user_payload():
             "email": f"{uuid.uuid4()}@gmail.com",
             "age": age
         }
+    
     return _user_payload
+
+@pytest.fixture
+def patch_user(client):
+    # El '*' obliga que todo lo que está a la derecha se pase con nombre
+    def _patch_user(id, *, name = False, email = False, age = False):
+        patch_payload = {}
+        if name:
+            patch_payload["name"] = "Diego Armando"
+        if email:
+            patch_payload["email"] = f"{uuid.uuid4()}@yahoo.com"
+        if age:
+            patch_payload["age"] = 36
+        
+        return client.patch(f"/users/{id}", json=patch_payload)
+    
+    return _patch_user # <-- Importante no olvidar esta línea
 
 @pytest.fixture
 def created_user(client, valid_user_payload):

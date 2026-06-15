@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
-from app.schemas import UserCreate, UserResponse, UserUpdate
+from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch
 from app.dependencies import get_db
 from app.models import UserModel
 
@@ -110,6 +110,50 @@ def update_user(
     user_to_update.email = user.email
     user_to_update.age = user.age
 
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
+
+@router.patch("/{user_id}", response_model=UserResponse, status_code=200)
+def partial_update_user(
+    user: UserPatch,
+    user_id: int = Path(..., gt=0),
+    db: Session = Depends(get_db)
+):
+    user_to_update = db.query(UserModel).filter(
+        UserModel.id == user_id,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if not user_to_update:
+        raise HTTPException(
+            status_code = 404,
+            detail = "User not found"
+        )
+    
+    """
+    Convierte user en un diccionario y solo incluye los campos que 
+    tienen un valor explicito asignado.
+    """
+    update_data = user.model_dump(exclude_unset=True)
+
+    if "email" in update_data:
+        existing_email = db.query(UserModel).filter(
+            UserModel.email == update_data["email"],
+            UserModel.id != user_id,
+            UserModel.is_active.is_(True)
+        ).first()
+
+        if existing_email:
+            raise HTTPException(
+                status_code = 409,
+                detail = "Email already exists"
+            )
+    
+    for field, value in update_data.items():
+        setattr(user_to_update, field, value)
+    
     db.commit()
     db.refresh(user_to_update)
 

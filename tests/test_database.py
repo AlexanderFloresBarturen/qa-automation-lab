@@ -57,3 +57,27 @@ def test_delete_user_change_state_in_database(client, db, created_user):
     assert user_deleted.email == created_user["email"]
     assert user_deleted.age == created_user["age"]
     assert user_deleted.is_active is False
+
+def test_patch_user_updates_database(client, db, created_user, patch_user):
+    quantity_before = db.query(UserModel).count()
+
+    response = patch_user(id=created_user["id"], name = True)
+    body = response.json()
+
+    quantity_after = db.query(UserModel).count()
+
+    user_updated = db.query(UserModel).filter(
+        UserModel.id == created_user["id"]
+    ).first()
+
+    assert response.status_code == 200
+
+    assert quantity_before == quantity_after
+
+    assert user_updated is not None
+
+    assert user_updated.id == created_user["id"]
+    assert user_updated.name == body["name"]
+    assert user_updated.email == created_user["email"]
+    assert user_updated.age == created_user["age"]
+    assert user_updated.is_active is True
