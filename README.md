@@ -23,6 +23,8 @@ Proyecto práctico de entrenamiento en QA Automation utilizando Python, enfocado
 * Pytest
 * SQLAlchemy
 * SQLite
+* pytest-cov
+* pytest-html
 * Docker
 * Git
 
@@ -263,6 +265,64 @@ Objetivos:
 * Evitar contaminación de datos entre ejecuciones.
 * Permitir ejecutar cualquier test de forma individual.
 
+### Cobertura de Código
+
+La cobertura se mide utilizando `pytest-cov`
+
+Ejecutar:
+
+```python
+pytest --cov=app
+```
+
+Mostrar líneas no cubiertas
+
+```python
+pytest --cov=app --cov-report=term-missing
+```
+
+Generar reporte HTML
+
+```python
+pytest --cov=app --cov-report=html
+```
+
+El reporte se genera en:
+
+```text
+htmlcov/index.html
+```
+
+Objetivos:
+
+* Detectar ramas de código no ejecutadas.
+* Identificar validaciones sin pruebas.
+* Detectar código muerto.
+* Medir cobertura de lógica de negocio.
+
+### Reportes HTML
+
+Los resultados de ejecución pueden exportarse a HTML utilizando `pytest-html`
+
+Generar reporte:
+
+```python
+pytest --html=report.html --self-contained-html
+```
+
+Archivo generado:
+
+```text
+report.html
+```
+
+Beneficios:
+
+* Evidencia de ejecución.
+* Historial de resultados.
+* Compartir resultados con desarrolladores o líderes técnicos.
+* Integración futura con CI/CD
+
 ---
 
 ## Conceptos QA Aprendidos
@@ -286,6 +346,8 @@ Objetivos:
 * Pruebas de actualización parcial (PATCH)
 * Validación de reglas de negocio
 * Dependency Injection
+* Verificación de cobertura
+* Validación de reglas de negocio mediante cobertura
 
 ### Pytest
 
@@ -297,6 +359,8 @@ Objetivos:
 * Dependency Overrides
 * Fixture autouse
 * Aislamiento de pruebas
+* Cobertura de código
+* Reportes HTML
 
 ### Bases de Datos
 
@@ -405,7 +469,10 @@ qa-automation-lab/
 * [x] Base de datos de pruebas aisladas
 * [x] Refactorización de fixtures
 * [x] Helpers de validación de respuestas
-* [ ] Cobertura de código
+* [x] Cobertura de código
+* [x] Reportes HTML
+* [ ] Limpieza mediante transacciones y rollback
+* [ ] Optimización de tiempos de ejecución
 
 ### Sprint 3 - Autenticación
 
@@ -461,3 +528,8 @@ qa-automation-lab/
 * Los tests no deben depender de valores específicos de IDs autoincrementales.
 * La parametrización reduce duplicación y facilita la ampliación de escenarios de prueba.
 * Los helpers permiten centralizar validaciones repetitivas y mejorar la mantenibilidad de la suite.
+* La cobertura ayuda a identificar reglas de negocio que no están siendo ejecutadas por los tests.
+* Una cobertura alta no garantiza ausencia de errores, pero reduce puntos ciegos.
+* Los reportes HTML facilitan compartir resultados de ejecución.
+* La cobertura puede revelar tests faltantes incluso cuando la suite parece completa.
+* `pytest-cov` y `pytest-html` son herramientas complementarias para medir calidad y generar evidencia.
