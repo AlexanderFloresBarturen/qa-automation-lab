@@ -471,29 +471,60 @@ qa-automation-lab/
 * [x] Helpers de validación de respuestas
 * [x] Cobertura de código
 * [x] Reportes HTML
-* [ ] Limpieza mediante transacciones y rollback
-* [ ] Optimización de tiempos de ejecución
+* [x] Optimización de tiempos de ejecución
+
+### Sprint 2.5 - Infraestructura de Testing
+
+* [ ] Crear VM Ubuntu dedicada para servicios
+* [ ] Instalar Docker Engine en Ubuntu
+* [ ] Instalar Docker Compose en Ubuntu
+* [ ] Desplegar PostgreSQL mediante Docker Compose
+* [ ] Crear base de datos de producción (`users`)
+* [ ] Crear base de datos de pruebas (`users_test`)
+* [ ] Migrar SQLAlchemy de SQLite a PostgreSQL
+* [ ] Adaptar fixtures de testing para PostgreSQL
+* [ ] Implementar limpieza mediante rollback transaccional
+* [ ] Actualizar documentación de infraestructura
+
+### Sprint 2.6 - Gestión de Esquema
+
+* [ ] Introducción a Alembic
+* [ ] Primera migración de esquema
+* [ ] Versionado de cambios de base de datos
+* [ ] Integración Alembic + SQLAlchemy
 
 ### Sprint 3 - Autenticación
 
 * [ ] Login
+* [ ] Hashing de contraseñas
+* [ ] JWT Access Token
+* [ ] Endpoint protegido
 * [ ] Bloqueo de cuenta
 * [ ] Recuperación de contraseña
 * [ ] Reglas de autenticación
+* [ ] Testing de autenticación
 
 ### Sprint 4 - Automatización Avanzada
 
 * [ ] Mocking
-* [ ] Parametrización
-* [ ] Fixtures avanzadas
-* [ ] Base de datos de pruebas
-* [ ] Cobertura de código
+* [ ] Test Doubles
+* [ ] Spy y Stub
+* [ ] Monkeypatch
+* [ ] Testing de servicios externos
+* [ ] Pruebas de integración avanzadas
+* [ ] Reportes HTML avanzados
+* [ ] Métricas de cobertura
 
 ### Sprint 5 - Integración Continua
 
 * [ ] GitHub Actions
 * [ ] Ejecución automática de tests
 * [ ] Reportes HTML
+* [ ] Ejecución de cobertura automática
+* [ ] Pipeline con PostgreSQL
+* [ ] Validación automática de Pull Requests
+* [ ] Badge de cobertura
+* [ ] Workflow de calidad
 
 ---
 
