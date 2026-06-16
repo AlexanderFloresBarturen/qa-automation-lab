@@ -16,6 +16,23 @@ def test_create_user_success(client, valid_user_payload):
 #endregion
 
 #region NEGATIVOS
+def test_create_user_duplicate_email(client, user_payload):
+    user_first = user_payload()
+    user_second = user_payload()
+
+    response_first = client.post("/users", json=user_first)
+    
+    user_second["email"] = user_first["email"]
+    response_second = client.post("/users", json=user_second)
+    body_second = response_second.json()
+
+    assert response_first.status_code == 201
+    assert response_second.status_code == 409
+
+    assert "detail" in body_second
+
+    assert body_second["detail"] == "Email already exists"
+
 def test_create_user_name_too_short(client, valid_user_payload):
     payload = valid_user_payload.copy()
     payload["name"] = "A"

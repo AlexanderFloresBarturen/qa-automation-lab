@@ -16,6 +16,7 @@ venv/
 # Coverage
 htmlcov/
 .coverage
+report.html
 
 # OS
 .DS_Store
