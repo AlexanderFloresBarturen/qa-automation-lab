@@ -154,6 +154,27 @@ SQLite
 | age       | Integer |
 | is_active | Boolean |
 
+### Base de Datos de Testing
+
+Las prueba automatizadas no utilizan la base de datos de desarrollo `(users.db)`.
+Durante la ejecución de los test se utiliza una base de datos aislada:
+
+```text
+test.db
+```
+
+Mediante `Dependency Overrides` de FastAPI:
+
+```python
+app.dependency_overrides[get_db] = override_get_db
+```
+
+#### Beneficios
+* Los test no modifican datos de desarrollo.
+* Las pruebas son reproducibles.
+* La persisetencia puede validarse sin afecar el entorno de trabajo.
+* Se facilita la ekecución de pruebas automatizadas en CI/CD.
+
 ---
 
 ## Testing
@@ -167,6 +188,8 @@ SQLite
 * created_user
 * user_payload
 * patch_user
+* clean_database
+* override_get_db
 
 ### Cobertura Actual
 
@@ -229,6 +252,17 @@ SQLite
 * Verificación de que UPDATE no crea registros adicionales
 * Verificación de que PATCH no crea registros adicionales
 
+### Aislamiento de Pruebas
+
+Cada prueba se ejecuta sobre una base de datos limpia mediante fixtures automáticas.
+
+Objetivos:
+
+* Evitar dependencias entre tests.
+* Garantizar resultados reproducibles.
+* Evitar contaminación de datos entre ejecuciones.
+* Permitir ejecutar cualquier test de forma individual.
+
 ---
 
 ## Conceptos QA Aprendidos
@@ -251,12 +285,17 @@ SQLite
 * Pruebas de integración de endpoints
 * Pruebas de actualización parcial (PATCH)
 * Validación de reglas de negocio
+* Dependency Injection
 
 ### Pytest
 
 * Fixtures
 * Reutilización de setup
 * Datos dinámicos
+* Parametrización
+* Helpers reutilizables
+* Dependency Overrides
+* Fixture autouse
 * Aislamiento de pruebas
 
 ### Bases de Datos
@@ -269,6 +308,10 @@ SQLite
 * Validación de Soft Delete desde la BD
 * Verificación de UPDATE vs INSERT
 * Verificación de PATCH vs INSERT
+* Base de datos aislada para testing
+* Separación entre entorno de desarrollo y pruebas
+* Limpieza automática de datos
+* Ciclo de vida de Session, Engine y Dependency Injection
 
 ---
 
@@ -358,10 +401,10 @@ qa-automation-lab/
 
 ### Sprint 2 - Calidad de Automatización
 
-* [ ] Parametrización de pruebas
-* [ ] Base de datos de pruebas aisladas
-* [ ] Refactorización de fixtures
-* [ ] Helpers de validación de respuestas
+* [x] Parametrización de pruebas
+* [x] Base de datos de pruebas aisladas
+* [x] Refactorización de fixtures
+* [x] Helpers de validación de respuestas
 * [ ] Cobertura de código
 
 ### Sprint 3 - Autenticación
@@ -409,3 +452,12 @@ qa-automation-lab/
 * `setattr()` permite implementar actualizaciones dinámicas de modelos.
 * La reutilización de emails después de un Soft Delete debe ser considerada explícitamente en las reglas de negocio.
 * Los tests deben validar que una actualización modifica registros existentes y no genera registros nuevos.
+* FastAPI permite reemplazar dependencias mediante `app.dependency_overrides`.
+* Los tests deben ejecutarse sobre una base de datos independiente de producción.
+* SQLAlchemy utiliza Session como unidad de trabajo para interactuar con la base de datos.
+* `add()` registra cambios en la Session pero no los persiste.
+* `commit()` confirma definitivamente los cambios en la base de datos.
+* `refresh()` sincroniza el objeto Python con el estado persistido.
+* Los tests no deben depender de valores específicos de IDs autoincrementales.
+* La parametrización reduce duplicación y facilita la ampliación de escenarios de prueba.
+* Los helpers permiten centralizar validaciones repetitivas y mejorar la mantenibilidad de la suite.
