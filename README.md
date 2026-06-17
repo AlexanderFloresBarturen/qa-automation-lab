@@ -584,13 +584,12 @@ qa-automation-lab/
 * [x] Uso de upgrade y downgrade
 * [x] Uso de alembic_version
 
-#### Sprint 2.3
+#### Sprint 2.3 - Alembic para Tests
 
-* [ ] Migrar users_test a Alembic
-* [ ] Eliminar create_all() de tests
-* [ ] Eliminar create_all() de main.py
-* [ ] Inicialización automática mediante migraciones
-* [ ] Sincronización users / users_test
+* [x] Migrar users_test a Alembic
+* [x] Eliminar create_all() de tests
+* [x] Eliminar create_all() de main.py
+* [x] Alembic como única fuente de verdad para la DB
 
 ### Sprint 3 - Autenticación
 
@@ -613,6 +612,8 @@ qa-automation-lab/
 * [ ] Pruebas de integración avanzadas
 * [ ] Reportes HTML avanzados
 * [ ] Métricas de cobertura
+* [ ] Inicialización automática mediante migraciones
+* [ ] Sincronización users / users_test
 
 ### Sprint 5 - Integración Continua
 

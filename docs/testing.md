@@ -341,17 +341,17 @@ Permite reutilizar usuarios ya creados.
 
 ## Ventajas del Enfoque
 
-### Rapidez
+### Gestión del Esquema
 
-No es necesario:
+Los tests no crean ni eliminan tablas.
 
-```text
-Crear tablas
-Borrar tablas
-Vaciar tablas
+El esquema de la base de datos de testing es gestionado exclusivamente mediante Alembic:
+
+```bash
+alembic upgrade head
 ```
 
-en cada test.
+esto garantiza que la estructura utiizada durante las pruebas sea idéntica a la utilizada en desarrollo.
 
 ---
 
