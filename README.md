@@ -22,10 +22,12 @@ Proyecto práctico de entrenamiento en QA Automation utilizando Python, enfocado
 * FastAPI
 * Pytest
 * SQLAlchemy
-* SQLite
+* PostgreSQL
+* Alembic
 * pytest-cov
 * pytest-html
 * Docker
+* Docker Compose
 * Git
 
 ---
@@ -197,6 +199,27 @@ app.dependency_overrides[get_db] = override_get_db
 * Las pruebas son reproducibles.
 * La persisetencia puede validarse sin afecar el entorno de trabajo.
 * Se facilita la ekecución de pruebas automatizadas en CI/CD.
+
+### Gestión de Esquema
+
+El versionado de la base de datos se realiza mediante Alembic.
+
+Comandos principales:
+
+```bash
+alembic current
+alembic history
+alembic revision --autogenerate -m "mensaje"
+alembic upgrade head
+alembic downgrade -1
+```
+
+Las migraciones se almacenan en:
+
+```text
+alembic/
+└── versions/
+```
 
 ---
 
@@ -419,6 +442,18 @@ Beneficios:
 * Verificación de UPDATE vs INSERT
 * Verificación de PATCH vs INSERT
 
+### Gestión de Esquema
+
+* Alembic
+* Baseline Migration
+* Revision
+* Upgrade
+* Downgrade
+* Autogenerate
+* alembic_version
+* Versionado de esquema
+* Migraciones reversibles
+
 ---
 
 ## Test Doubles
@@ -532,10 +567,22 @@ qa-automation-lab/
 
 #### Sprint 2.2 - Gestión de Esquema
 
-* [ ] Introducción a Alembic
-* [ ] Primera migración de esquema
-* [ ] Versionado de cambios de base de datos
-* [ ] Integración Alembic + SQLAlchemy
+* [x] Introducción a Alembic
+* [x] Inicialización de Alembic
+* [x] Integración Alembic + SQLAlchemy
+* [x] Creación de Baseline Migration
+* [x] Primera migración de esquema
+* [x] Versionado de cambios de base de datos
+* [x] Uso de upgrade y downgrade
+* [x] Uso de alembic_version
+
+#### Sprint 2.3
+
+* [ ] Migrar users_test a Alembic
+* [ ] Eliminar create_all() de tests
+* [ ] Eliminar create_all() de main.py
+* [ ] Inicialización automática mediante migraciones
+* [ ] Sincronización users / users_test
 
 ### Sprint 3 - Autenticación
 
