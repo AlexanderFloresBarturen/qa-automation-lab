@@ -5,20 +5,16 @@ from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import Base
 from app.dependencies import get_db
-from app.models import UserModel
 
 import pytest
 import uuid
 
-#region Configuración de DB de prueba
+#region Configuración de DB de testing
 
-TEST_DATABASE_URL = "sqlite:///./test.db"
+TEST_DATABASE_URL = "postgresql+psycopg://postgres:postgres@192.168.56.2:5432/users_test"
 
-# Crea conexión SQLite
-test_engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
+# Crea conexión PostgreSQL para testing
+test_engine = create_engine(TEST_DATABASE_URL)
 
 # Crea sesiones para consultas
 TestingSessionLocal = sessionmaker(
@@ -27,19 +23,38 @@ TestingSessionLocal = sessionmaker(
     bind=test_engine
 )
 
-# Esto crea y cierra sesiones automáticamente por cada request
-def override_get_db():
-    db = TestingSessionLocal()
+@pytest.fixture
+def db():
+    # Abre conexión física con PostgreSQL
+    connection = test_engine.connect()
 
-    try:
-        yield db
-    finally:
-        db.close()
+    # Abre una transacción sobre la conexión
+    transaction = connection.begin()
+
+    """
+    Abre una sesión para los endpoints, la cual se asocia a la transacción
+    existente y se ejecuta dentro de esta
+    """
+    db = TestingSessionLocal(bind=connection)
+
+    yield db
+
+    # Cierra la sesión
+    db.close()
+
+    # Revierte los cambios dentro de la transacción
+    transaction.rollback()
+
+    # Cierra la conexión
+    connection.close()
 
 @pytest.fixture
-def client():
-    app.dependency_overrides[get_db] = override_get_db
+def client(db):
+    def override_get_db():
+        yield db
     
+    app.dependency_overrides[get_db] = override_get_db
+
     with TestClient(app) as client:
         yield client
     
@@ -47,14 +62,9 @@ def client():
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
+    # Crea la estructura de la DB de testing una única vez
     Base.metadata.create_all(bind=test_engine)
     yield
-    Base.metadata.drop_all(bind=test_engine)
-
-@pytest.fixture(autouse=True)
-def clean_database(db):
-    db.query(UserModel).delete()
-    db.commit()
 
 #endregion
 
@@ -116,9 +126,3 @@ def created_user(client, valid_user_payload):
     assert response.status_code == 201
 
     return response.json()
-
-@pytest.fixture
-def db():
-    db = TestingSessionLocal()
-    yield db
-    db.close()
