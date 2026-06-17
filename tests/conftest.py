@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.main import app
-from app.database import Base
 from app.dependencies import get_db
 
 import pytest
@@ -59,12 +58,6 @@ def client(db):
         yield client
     
     app.dependency_overrides.clear()    # Evita que el override quede activo para otros contextos
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    # Crea la estructura de la DB de testing una única vez
-    Base.metadata.create_all(bind=test_engine)
-    yield
 
 #endregion
 
