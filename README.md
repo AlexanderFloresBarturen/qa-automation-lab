@@ -144,7 +144,28 @@ Características:
 
 ### Base de Datos
 
-SQLite
+PostgreSQL
+
+### Infraestructura
+
+La base de datos se ejecuta dentro de un contenedor Docker alojado en una VM Ubuntu. La conectividad se realiza mediante una interfaz de red Host-Only para aislar el servicio del resto de la red.
+
+Arquitectura:
+
+```text
+Windows
+│
+├── FastAPI
+├── Pytest
+└── PostgreSQL Client
+     │
+     ▼
+Ubuntu VM
+│
+└── Docker
+     │
+     └── PostgreSQL
+```
 
 ### Tabla Users
 
@@ -158,11 +179,11 @@ SQLite
 
 ### Base de Datos de Testing
 
-Las prueba automatizadas no utilizan la base de datos de desarrollo `(users.db)`.
+Las prueba automatizadas no utilizan la base de datos de desarrollo `users`.
 Durante la ejecución de los test se utiliza una base de datos aislada:
 
 ```text
-test.db
+users_test
 ```
 
 Mediante `Dependency Overrides` de FastAPI:
@@ -190,8 +211,7 @@ app.dependency_overrides[get_db] = override_get_db
 * created_user
 * user_payload
 * patch_user
-* clean_database
-* override_get_db
+* setup_test_database
 
 ### Cobertura Actual
 
@@ -245,7 +265,7 @@ app.dependency_overrides[get_db] = override_get_db
 * Email null
 * Age null
 
-#### Persistencia SQLite
+#### Persistencia PostgreSQL
 
 * Usuario guardado correctamente en la base de datos
 * Actualización reflejada correctamente en la base de datos
@@ -256,14 +276,35 @@ app.dependency_overrides[get_db] = override_get_db
 
 ### Aislamiento de Pruebas
 
-Cada prueba se ejecuta sobre una base de datos limpia mediante fixtures automáticas.
+Los test utilizan transacciones SQL para garantizar aislamiento completo entre ejecuciones.
 
-Objetivos:
+Cada prueba:
 
-* Evitar dependencias entre tests.
-* Garantizar resultados reproducibles.
-* Evitar contaminación de datos entre ejecuciones.
-* Permitir ejecutar cualquier test de forma individual.
+1. Abre una conexión a PostgreSQL.
+2. Inicia una transacción.
+3. Ejecuta la prueba.
+4. Revierte todos los cambios mediante rollback.
+
+Ejemplo simplificado:
+
+```python
+connection = test_engine.connect()
+
+transaction = connection.begin()
+
+db = TestingSessionLocal(bind=connection)
+
+yield db
+
+transaction.rollback()
+```
+
+#### Beneficios
+
+* No es necesario eliminar registros manuales.
+* Las pruebas son independientes entre sí.
+* La base de datos permanece limpia después de cada test.
+* Reduce el tiempo de ejecución de la suite.
 
 ### Cobertura de Código
 
@@ -367,15 +408,16 @@ Beneficios:
 * Persistencia
 * Integridad de datos
 * Soft Delete
+* PostgreSQL
+* SQLAlchemy ORM
+* Dependency Overrides
+* Base de datos aislada para testing
+* Rollback transaccional
 * Validación directa de persistencia
 * Validación de UPDATE sin inserción de registros
 * Validación de Soft Delete desde la BD
 * Verificación de UPDATE vs INSERT
 * Verificación de PATCH vs INSERT
-* Base de datos aislada para testing
-* Separación entre entorno de desarrollo y pruebas
-* Limpieza automática de datos
-* Ciclo de vida de Session, Engine y Dependency Injection
 
 ---
 
@@ -473,20 +515,22 @@ qa-automation-lab/
 * [x] Reportes HTML
 * [x] Optimización de tiempos de ejecución
 
-### Sprint 2.5 - Infraestructura de Testing
+#### Sprint 2.1 - Infraestructura de Testing
 
-* [ ] Crear VM Ubuntu dedicada para servicios
-* [ ] Instalar Docker Engine en Ubuntu
-* [ ] Instalar Docker Compose en Ubuntu
-* [ ] Desplegar PostgreSQL mediante Docker Compose
-* [ ] Crear base de datos de producción (`users`)
-* [ ] Crear base de datos de pruebas (`users_test`)
-* [ ] Migrar SQLAlchemy de SQLite a PostgreSQL
-* [ ] Adaptar fixtures de testing para PostgreSQL
-* [ ] Implementar limpieza mediante rollback transaccional
-* [ ] Actualizar documentación de infraestructura
+* [x] Crear VM Ubuntu dedicada para servicios
+* [x] Instalar Docker Engine en Ubuntu
+* [x] Instalar Docker Compose en Ubuntu
+* [x] Desplegar PostgreSQL mediante Docker Compose
+* [x] PostgreSQL expuesto unicamente en Host-Only
+* [x] Crear base de datos de desarrollo (`users`)
+* [x] Crear base de datos de pruebas (`users_test`)
+* [x] Migrar SQLAlchemy de SQLite a PostgreSQL
+* [x] Adaptar fixtures de testing para PostgreSQL
+* [x] Implementar limpieza mediante rollback transaccional
+* [x] Aislamiento completo entre desarrollo y testing
+* [x] Actualizar documentación de infraestructura
 
-### Sprint 2.6 - Gestión de Esquema
+#### Sprint 2.2 - Gestión de Esquema
 
 * [ ] Introducción a Alembic
 * [ ] Primera migración de esquema
@@ -564,3 +608,10 @@ qa-automation-lab/
 * Los reportes HTML facilitan compartir resultados de ejecución.
 * La cobertura puede revelar tests faltantes incluso cuando la suite parece completa.
 * `pytest-cov` y `pytest-html` son herramientas complementarias para medir calidad y generar evidencia.
+* SQLAlchemy permite migrar entre motores de bases de datos con cambios mínimos en la aplicación.
+* Dependency Overrides permiten redirigir dependencias de FastAPI durante los tests.
+* PostgreSQL es más adecuado que SQLite para simular entornos reales de producción.
+* Los rollbacks transaccionales permiten mantener aislamiento completo entre pruebas.
+* Una sesión SQLAlchemy puede asociarse a una conexión existente mediante bind=connection.
+* El rollback debe ejecutarse sobre la misma transacción utilizada por los endpoints.
+* Los tests de integración pueden compartir una sesión mediante Dependency Overrides sin perder aislamiento.
