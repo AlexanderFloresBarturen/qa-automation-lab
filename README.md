@@ -500,6 +500,12 @@ Permite observar cómo fue utilizado un objeto durante una prueba.
 ```text
 qa-automation-lab/
 │
+├── alembic/
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+│       └── ...
+│
 ├── app/
 │   ├── main.py
 │   ├── schemas.py
@@ -511,6 +517,7 @@ qa-automation-lab/
 │
 ├── tests/
 │   ├── conftest.py
+│   ├── helpers.py
 │   ├── test_create_user.py
 │   ├── test_database.py
 │   ├── test_delete_user.py
@@ -518,8 +525,9 @@ qa-automation-lab/
 │   ├── test_patch_user.py
 │   └── test_update_user.py
 │
-├── requirements.txt
-└── README.md
+├── README.md
+├── alembic.ini
+└── requirements.txt
 ```
 
 ---
