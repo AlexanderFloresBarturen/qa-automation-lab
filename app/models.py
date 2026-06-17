@@ -14,3 +14,5 @@ class UserModel(Base):
     age = Column(Integer)
     
     is_active = Column(Boolean, default=True)
+
+    phone = Column(String, nullable=True)
