@@ -34,6 +34,21 @@ Agregar esta columna al modelo no modifica automáticamente una tabla ya existen
 
 Para resolver este problema se introdujo Alembic.
 
+### Nota
+
+Durante el Sprint 3.1 se reemplazó la columna `phone`:
+
+```text
+password_hash
+```
+
+mediante una migración Alembic:
+
+Ojetivo:
+
+* Eliminar un campo utilizado únicamente para aprendizaje.
+* Preparar el modelo para autenticación basada en bcrypt.
+
 ---
 
 ## Conceptos Fundamentales

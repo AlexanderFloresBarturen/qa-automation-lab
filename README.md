@@ -26,6 +26,8 @@ Proyecto práctico de entrenamiento en QA Automation utilizando Python, enfocado
 * Alembic
 * pytest-cov
 * pytest-html
+* Passlib
+* bcrypt
 * Docker
 * Docker Compose
 * Git
@@ -171,13 +173,14 @@ Ubuntu VM
 
 ### Tabla Users
 
-| Campo     | Tipo    |
-| --------- | ------- |
-| id        | Integer |
-| name      | String  |
-| email     | String  |
-| age       | Integer |
-| is_active | Boolean |
+| Campo         | Tipo    |
+| ------------- | ------- |
+| id            | Integer |
+| name          | String  |
+| email         | String  |
+| age           | Integer |
+| is_active     | Boolean |
+| password_hash | String  |
 
 ### Base de Datos de Testing
 
@@ -243,10 +246,13 @@ alembic/
 * Registro exitoso
 * Nombre demasiado corto
 * Email inválido
-* Edad menor a 18
+* Edad vacío
 * Payload vacío
-* Campos obligatorios ausentes
-* Email duplicado
+* Contraseña sin minúscula
+* Contraseña sin mayúscula
+* Contraseña sin número
+* Contraseña sin
+* Contraseña longitud mínima
 
 #### GET /users/{id}
 
@@ -296,6 +302,9 @@ alembic/
 * Soft Delete reflejado correctamente en la base de datos
 * Verificación de que UPDATE no crea registros adicionales
 * Verificación de que PATCH no crea registros adicionales
+* La contraseña nunca se alamacena en texto plano
+* bcrypt genere un hash válido
+* `verify_password()` valide correctamente el hash almacenado
 
 ### Aislamiento de Pruebas
 
@@ -515,6 +524,9 @@ qa-automation-lab/
 │   └── routes/
 │       └── users.py
 │
+├── app/
+│   └── security.py
+│
 ├── tests/
 │   ├── conftest.py
 │   ├── helpers.py
@@ -593,13 +605,34 @@ qa-automation-lab/
 
 ### Sprint 3 - Autenticación
 
+#### Sprint 3.1
+
+* [x] Reemplazar phone por password_hash (nullable=True)
+* [x] Generar migración con Alembic
+* [x] Aplicar migración en users
+* [x] Aplicar migración en users_test
+* [x] Verificar esquema
+* [x] Hashing con bcrypt
+* [x] Testing de validación de contraseñas
+* [x] Testing de persistencia de hashes
 * [ ] Login
-* [ ] Hashing de contraseñas
 * [ ] JWT Access Token
 * [ ] Endpoint protegido
+* [ ] Testing de autenticación
+
+#### Sprint 3.2
+
+* [ ] Expiración de tokens
+* [ ] Dependencia get_current_user
+* [ ] Roles
+* [ ] Reglas de autenticación
+* [ ] Testing avanzado
+
+#### Sprint 3.3
+
 * [ ] Bloqueo de cuenta
 * [ ] Recuperación de contraseña
-* [ ] Reglas de autenticación
+* [ ] Tokens de recuperación
 * [ ] Testing de autenticación
 
 ### Sprint 4 - Automatización Avanzada
