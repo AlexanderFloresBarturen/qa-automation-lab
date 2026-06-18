@@ -15,4 +15,4 @@ class UserModel(Base):
     
     is_active = Column(Boolean, default=True)
 
-    phone = Column(String, nullable=True)
+    password_hash = Column(String, nullable=True)

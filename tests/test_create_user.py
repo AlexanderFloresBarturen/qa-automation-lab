@@ -1,3 +1,5 @@
+import pytest
+
 from tests.helpers import assert_valid_user_response
 
 #region POSITIVOS
@@ -83,5 +85,31 @@ def test_create_user_empty_payload(client):
     assert body["detail"][0]["loc"] == ["body", "name"]
     assert body["detail"][1]["loc"] == ["body", "email"]
     assert body["detail"][2]["loc"] == ["body", "age"]
+
+@pytest.mark.parametrize(
+        "password, type, error_message",
+        [
+            ("password123!", "value_error", "The password must contain at least one uppercase letter"),
+            ("PASSWORD123!", "value_error", "The password must contain at least one lowercase letter"),
+            ("Password!!!", "value_error", "The password must contain at least one number"),
+            ("Password123", "value_error", "The password must contain at least one special character"),
+            ("Pass1!", "string_too_short", "String should have at least 8 characters")
+        ]
+)
+def test_create_user_invalid_password(client, user_payload, password, type, error_message):
+    payload = user_payload(password=password)
+    response = client.post("/users", json=payload)
+    body = response.json()
+
+    assert response.status_code == 422
+
+    assert "detail" in body
+    assert "loc" in body["detail"][0]
+    assert "type" in body["detail"][0]
+    assert "msg" in body["detail"][0]
+
+    assert body["detail"][0]["loc"] == ["body", "password"]
+    assert body["detail"][0]["type"] == type
+    assert error_message in body["detail"][0]["msg"]
 
 #endregion

@@ -1,4 +1,5 @@
 from app.models import UserModel
+from app.auth.security import verify_password
 
 def test_create_user_saves_correct_data_in_database(client, db, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
@@ -17,6 +18,9 @@ def test_create_user_saves_correct_data_in_database(client, db, valid_user_paylo
     assert user.email == valid_user_payload["email"]
     assert user.age == valid_user_payload["age"]
     assert user.is_active is True
+
+    assert valid_user_payload["password"] != user.password_hash
+    assert verify_password(valid_user_payload["password"], user.password_hash)
 
 def test_update_user_saves_correct_data_in_database(client, db, created_user, valid_update_payload):
     quantity_before = db.query(UserModel).count()

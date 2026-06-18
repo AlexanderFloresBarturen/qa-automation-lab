@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
-from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch
+from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch, UserLogin
 from app.dependencies import get_db
 from app.models import UserModel
+from app.auth.security import hash_password, verify_password
 
 router = APIRouter()
 
+#region register_user
 @router.post("/", response_model=UserResponse, status_code=201)
 def register_user(
     user: UserCreate,
@@ -28,7 +30,8 @@ def register_user(
     new_user = UserModel(
         name = user.name,
         email = user.email,
-        age = user.age
+        age = user.age,
+        password_hash = hash_password(user.password)
     )
     
     db.add(new_user)
@@ -37,6 +40,9 @@ def register_user(
 
     return new_user
 
+#endregion
+
+#region get_user
 @router.get("/{user_id}", response_model=UserResponse, status_code=200)
 def get_user(
     user_id: int = Path(gt=0),
@@ -55,6 +61,9 @@ def get_user(
     
     return user
 
+#endregion
+
+#region delete_user
 @router.delete("/{user_id}", status_code=204)
 def delete_user(
     user_id: int,
@@ -77,6 +86,9 @@ def delete_user(
 
     return
 
+#endregion
+
+#region update_user
 @router.put("/{user_id}", response_model=UserResponse, status_code=200)
 def update_user(
     user: UserUpdate,
@@ -115,6 +127,9 @@ def update_user(
 
     return user_to_update
 
+#endregion
+
+#region partial_update_user
 @router.patch("/{user_id}", response_model=UserResponse, status_code=200)
 def partial_update_user(
     user: UserPatch,
@@ -158,3 +173,35 @@ def partial_update_user(
     db.refresh(user_to_update)
 
     return user_to_update
+
+#endregion
+
+#region login
+@router.post("/login")
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(UserModel).filter(
+        UserModel.email == user.email,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if not existing_user:
+        raise HTTPException(
+            status_code= 401,
+            detail= "Invalid credentials"
+        )
+    
+    if not verify_password(
+        user.password,
+        existing_user.password_hash
+    ):
+        raise HTTPException(
+            status_code= 401,
+            detail= "Invalid credentials"
+        )
+    
+    return {"message": "Welcome"}
+
+#endregion

@@ -71,7 +71,8 @@ def valid_user_payload():
     return{
         "name": "Alex",
         "email": f"{uuid.uuid4()}@gmail.com",
-        "age": 25
+        "age": 25,
+        "password": "Password123!"
     }
 
 @pytest.fixture
@@ -79,19 +80,22 @@ def valid_update_payload():
     return{
         "name": "Pepe",
         "email": f"{uuid.uuid4()}@hotmail.com",
-        "age": 42
+        "age": 42,
+        "password": "Password123!"
     }
 
 @pytest.fixture
 def user_payload():
     def _user_payload(
             name="Pepe",
-            age=49
+            age=49,
+            password="Password123!"
     ):
         return {
             "name": name,
             "email": f"{uuid.uuid4()}@gmail.com",
-            "age": age
+            "age": age,
+            "password": password
         }
     
     return _user_payload
