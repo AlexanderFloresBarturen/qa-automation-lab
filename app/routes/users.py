@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch, LoginRequest, LoginResponse
+from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse
 from app.dependencies import get_db
 from app.models import UserModel
 from app.security.password import hash_password, verify_password
@@ -181,11 +182,11 @@ def partial_update_user(
 #region login
 @router.post("/login", response_model=LoginResponse)
 def login(
-    credentials: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
     existing_user = db.query(UserModel).filter(
-        UserModel.email == credentials.email,
+        UserModel.email == form_data.username,
         UserModel.is_active.is_(True)
     ).first()
 
@@ -196,7 +197,7 @@ def login(
         )
     
     if not verify_password(
-        credentials.password,
+        form_data.password,
         existing_user.password_hash
     ):
         raise HTTPException(

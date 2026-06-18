@@ -3,9 +3,9 @@ def test_login_user_success(client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
 
     payload = {}
-    payload["email"] = valid_user_payload["email"]
+    payload["username"] = valid_user_payload["email"]
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", json=payload)
+    login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -23,9 +23,9 @@ def test_login_nonexisting_user(client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
 
     payload = {}
-    payload["email"] = "nonexisting@email.com"
+    payload["username"] = "nonexisting@email.com"
     payload["password"] =  valid_user_payload["password"]
-    login_response = client.post("/users/login", json=payload)
+    login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -41,9 +41,9 @@ def test_login_incorrect_password(client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
 
     payload = {}
-    payload["email"] = valid_user_payload["email"]
+    payload["username"] = valid_user_payload["email"]
     payload["password"] =  "MuSuperPassword123!"
-    login_response = client.post("/users/login", json=payload)
+    login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -62,9 +62,9 @@ def test_get_me_success(client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
 
     payload = {}
-    payload["email"] = valid_user_payload["email"]
+    payload["username"] = valid_user_payload["email"]
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", json=payload)
+    login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 
     token = login_body["access_token"]
