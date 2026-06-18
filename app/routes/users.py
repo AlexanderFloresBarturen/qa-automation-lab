@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
-from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch, UserLogin
+from app.schemas import UserCreate, UserResponse, UserUpdate, UserPatch, LoginRequest, LoginResponse
 from app.dependencies import get_db
 from app.models import UserModel
-from app.auth.security import hash_password, verify_password
+from app.security.password import hash_password, verify_password
+from app.security.jwt import create_access_token
+from app.security.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -177,13 +179,13 @@ def partial_update_user(
 #endregion
 
 #region login
-@router.post("/login")
+@router.post("/login", response_model=LoginResponse)
 def login(
-    user: UserLogin,
+    credentials: LoginRequest,
     db: Session = Depends(get_db)
 ):
     existing_user = db.query(UserModel).filter(
-        UserModel.email == user.email,
+        UserModel.email == credentials.email,
         UserModel.is_active.is_(True)
     ).first()
 
@@ -194,7 +196,7 @@ def login(
         )
     
     if not verify_password(
-        user.password,
+        credentials.password,
         existing_user.password_hash
     ):
         raise HTTPException(
@@ -202,6 +204,20 @@ def login(
             detail= "Invalid credentials"
         )
     
-    return {"message": "Welcome"}
+    access_token = create_access_token(existing_user.id)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+#endregion
+
+#region endpoint de prueba JWT
+@router.get("/test/me", response_model=UserResponse)
+def get_me(
+    current_user: UserModel = Depends(get_current_user)
+):
+    return current_user
 
 #endregion

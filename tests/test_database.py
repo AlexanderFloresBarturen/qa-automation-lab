@@ -1,5 +1,5 @@
 from app.models import UserModel
-from app.auth.security import verify_password
+from app.security.password import verify_password
 
 def test_create_user_saves_correct_data_in_database(client, db, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
@@ -62,7 +62,7 @@ def test_delete_user_change_state_in_database(client, db, created_user):
     assert user_deleted.age == created_user["age"]
     assert user_deleted.is_active is False
 
-def test_patch_user_updates_database(client, db, created_user, patch_user):
+def test_patch_user_updates_database(db, created_user, patch_user):
     quantity_before = db.query(UserModel).count()
 
     response = patch_user(id=created_user["id"], name = True)
