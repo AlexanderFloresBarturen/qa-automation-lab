@@ -142,6 +142,14 @@ Características:
 * Un PATCH debe contener al menos un campo para actualizar.
 * PATCH actualiza únicamente los campos enviados por el cliente.
 
+### Contraseñas
+
+* Mínimo 8 caracteres
+* Al menos una mayúscula
+* Al menos una minúscula
+* Al menos un número
+* Al menos un carácter especial
+
 ---
 
 ## Persistencia
@@ -521,11 +529,16 @@ qa-automation-lab/
 │   ├── models.py
 │   ├── database.py
 │   ├── dependencies.py
-│   └── routes/
-│       └── users.py
+│   ├── routes/
+│   │   └── users.py
+│   └── security/
+│       ├── jwt.py
+│       └── password.py
 │
-├── app/
-│   └── security.py
+├── docs/
+│   ├── alembic.md
+│   ├── docker.md
+│   └── testing.md
 │
 ├── tests/
 │   ├── conftest.py
@@ -615,10 +628,11 @@ qa-automation-lab/
 * [x] Hashing con bcrypt
 * [x] Testing de validación de contraseñas
 * [x] Testing de persistencia de hashes
-* [ ] Login
-* [ ] JWT Access Token
-* [ ] Endpoint protegido
-* [ ] Testing de autenticación
+* [x] Login
+* [x] Testing de login
+* [x] JWT Access Token
+* [x] Endpoint protegido
+* [x] Testing de autenticación
 
 #### Sprint 3.2
 
