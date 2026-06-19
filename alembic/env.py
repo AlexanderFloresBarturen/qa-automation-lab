@@ -18,12 +18,12 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.database import Base
+from app.database.connection import Base
 """
 Este import es importante para forzar que SQLAlchemy registre
 el modelo antes de contruir la metadata
 """
-from app.models import UserModel
+from app.models.user_model import UserModel
 
 target_metadata = Base.metadata
 

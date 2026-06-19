@@ -1,4 +1,4 @@
-from app.models import UserModel
+from app.models.user_model import UserModel
 from app.security.password import verify_password
 
 def test_create_user_saves_correct_data_in_database(client, db, valid_user_payload):

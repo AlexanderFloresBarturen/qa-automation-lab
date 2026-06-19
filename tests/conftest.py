@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.main import app
-from app.dependencies import get_db
+from app.database.dependencies import get_db
 
 import pytest
 import uuid

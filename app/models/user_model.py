@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from app.database.connection import Base
 
 # Define la tabla users
 class UserModel(Base):
