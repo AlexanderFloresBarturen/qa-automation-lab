@@ -49,8 +49,15 @@ def register_user(
 @router.get("/{user_id}", response_model=UserResponse, status_code=200)
 def get_user(
     user_id: int = Path(gt=0),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code= 403,
+            detail= "Forbidden"
+        )
+    
     user = db.query(UserModel).filter(
         UserModel.id == user_id,
         UserModel.is_active.is_(True)
@@ -69,9 +76,16 @@ def get_user(
 #region delete_user
 @router.delete("/{user_id}", status_code=204)
 def delete_user(
-    user_id: int,
+    user_id: int = Path(gt=0),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code= 403,
+            detail= "Forbidden"
+        )
+    
     user = db.query(UserModel).filter(
         UserModel.id == user_id,
         UserModel.is_active.is_(True)
@@ -96,8 +110,15 @@ def delete_user(
 def update_user(
     user: UserUpdate,
     user_id: int = Path(..., gt=0),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code= 403,
+            detail= "Forbidden"
+        )
+    
     user_to_update = db.query(UserModel).filter(
         UserModel.id == user_id,
         UserModel.is_active.is_(True)
@@ -137,8 +158,15 @@ def update_user(
 def partial_update_user(
     user: UserPatch,
     user_id: int = Path(..., gt=0),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code= 403,
+            detail= "Forbidden"
+        )
+    
     user_to_update = db.query(UserModel).filter(
         UserModel.id == user_id,
         UserModel.is_active.is_(True)

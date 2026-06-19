@@ -103,7 +103,7 @@ def user_payload():
 @pytest.fixture
 def patch_user(client):
     # El '*' obliga que todo lo que está a la derecha se pase con nombre
-    def _patch_user(id, *, name = False, email = False, age = False):
+    def _patch_user(id, *, name = False, email = False, age = False, headers = ""):
         patch_payload = {}
         if name:
             patch_payload["name"] = "Diego Armando"
@@ -112,7 +112,7 @@ def patch_user(client):
         if age:
             patch_payload["age"] = 36
         
-        return client.patch(f"/users/{id}", json=patch_payload)
+        return client.patch(f"/users/{id}", json=patch_payload, headers=headers)
     
     return _patch_user # <-- Importante no olvidar esta línea
 
@@ -123,3 +123,38 @@ def created_user(client, valid_user_payload):
     assert response.status_code == 201
 
     return response.json()
+
+@pytest.fixture
+def loged_user(client, valid_user_payload):
+    created_response = client.post("/users", json=valid_user_payload)
+    created_body = created_response.json()
+
+    payload = {
+        "username": valid_user_payload["email"],
+        "password": valid_user_payload["password"]
+    }
+    login_response = client.post("/users/login", data=payload)
+    login_body = login_response.json()
+
+    assert created_response.status_code == 201
+    assert login_response.status_code == 200
+
+    created_body["token"] = login_body["access_token"]
+
+    return created_body
+
+@pytest.fixture
+def get_token(client):
+    def _get_token(*, username="", password=""):
+        payload = {
+            "username": username,
+            "password": password
+        }
+        login_response = client.post("/users/login", data=payload)
+        login_body = login_response.json()
+
+        assert login_response.status_code == 200
+
+        return login_body["access_token"]
+    
+    return _get_token
