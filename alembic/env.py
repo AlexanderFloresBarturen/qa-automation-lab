@@ -24,6 +24,7 @@ Este import es importante para forzar que SQLAlchemy registre
 el modelo antes de contruir la metadata
 """
 from app.models.user_model import UserModel
+from app.models.role_model import RoleModel
 
 target_metadata = Base.metadata
 

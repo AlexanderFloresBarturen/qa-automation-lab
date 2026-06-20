@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+
 from app.database.connection import Base
 
 # Define la tabla users
@@ -15,4 +17,8 @@ class UserModel(Base):
     
     is_active = Column(Boolean, default=True)
 
-    password_hash = Column(String, nullable=True)
+    password_hash = Column(String, nullable=False)
+
+    role_id = Column(Integer, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False)
+
+    role = relationship("RoleModel", back_populates="users")

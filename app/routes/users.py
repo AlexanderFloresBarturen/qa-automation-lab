@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse
 from app.database.dependencies import get_db
 from app.models.user_model import UserModel
+from app.models.role_model import RoleModel
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
-from app.security.dependencies import get_current_user
+from app.security.dependencies import get_current_user, require_admin
 
 router = APIRouter()
 
@@ -29,12 +30,17 @@ def register_user(
             detail = "Email already exists"
         )
     
+    user_role = db.query(RoleModel).filter(
+        RoleModel.name == "user"
+    ).first()
+
     # Registrar el usuario
     new_user = UserModel(
         name = user.name,
         email = user.email,
         age = user.age,
-        password_hash = hash_password(user.password)
+        password_hash = hash_password(user.password),
+        role_id = user_role.id
     )
     
     db.add(new_user)
@@ -242,11 +248,19 @@ def login(
 
 #endregion
 
-#region endpoint de prueba JWT
+#region endpoints de prueba
+# JWT
 @router.get("/test/me", response_model=UserResponse)
 def get_me(
     current_user: UserModel = Depends(get_current_user)
 ):
     return current_user
+
+# rol admin
+@router.get("/test/admin")
+def admin_endpoint(
+    current_user: UserModel = Depends(require_admin)
+):
+    return {"message": "Admin access granted"}
 
 #endregion
