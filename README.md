@@ -28,6 +28,9 @@ Proyecto práctico de entrenamiento en QA Automation utilizando Python, enfocado
 * pytest-html
 * Passlib
 * bcrypt
+* python-jose
+* JWT
+* python-multipart
 * Docker
 * Docker Compose
 * Git
@@ -144,11 +147,20 @@ Características:
 
 ### Contraseñas
 
-* Mínimo 8 caracteres
-* Al menos una mayúscula
-* Al menos una minúscula
-* Al menos un número
-* Al menos un carácter especial
+* Mínimo 8 caracteres.
+* Al menos una mayúscula.
+* Al menos una minúscula.
+* Al menos un número.
+* Al menos un carácter especial.
+
+### Autenticación
+
+* Las contraseñas nunca se almacenan en texto plano.
+* Las contraseñas se almacenan utilizando bcrypt.
+* Los usuarios deben autenticarse mediente JWT.
+* Los JWT incluyen fecha de expiración.
+* Los endpoints protegidos requieren Bearer Token.
+* Los usuarios inactivos no pueden autenticarse.
 
 ---
 
@@ -181,14 +193,27 @@ Ubuntu VM
 
 ### Tabla Users
 
-| Campo         | Tipo    |
-| ------------- | ------- |
-| id            | Integer |
-| name          | String  |
-| email         | String  |
-| age           | Integer |
-| is_active     | Boolean |
-| password_hash | String  |
+| Campo         | Tipo        |
+| ------------- | ----------- |
+| id            | Integer     |
+| role_id       | Integer (FK)|
+| name          | String      |
+| email         | String      |
+| age           | Integer     |
+| is_active     | Boolean     |
+| password_hash | String      |
+
+### Tablas Roles
+
+| Campo         | Tipo        |
+| ------------- | ----------- |
+| id            | Integer     |
+| name          | String      |
+
+Roles inciales:
+
+1. admin
+2. user
 
 ### Base de Datos de Testing
 
@@ -245,7 +270,8 @@ alembic/
 * created_user
 * user_payload
 * patch_user
-* setup_test_database
+* loged_user
+* get_token
 
 ### Cobertura Actual
 
@@ -302,6 +328,18 @@ alembic/
 * Email null
 * Age null
 
+#### POST /users/login
+
+* Login exitoso
+* Usuario inexistente
+* Contraseña incorrecta
+
+#### POST /users/test/me
+
+* Token válido
+* Token inválido
+* Sin token
+
 #### Persistencia PostgreSQL
 
 * Usuario guardado correctamente en la base de datos
@@ -313,6 +351,17 @@ alembic/
 * La contraseña nunca se alamacena en texto plano
 * bcrypt genere un hash válido
 * `verify_password()` valide correctamente el hash almacenado
+
+### Autorización
+
+* Usuario consulta su propio perfil
+* Usuario intenta consultar otro perfil
+* Usuario elimina su propio perfil
+* Usuario intenta eliminar otro perfil
+* Usuario modifica su propio perfil
+* Usuario intenta modificar otro perfil
+* Token inválido
+* Sin token
 
 ### Aislamiento de Pruebas
 
@@ -471,6 +520,16 @@ Beneficios:
 * Versionado de esquema
 * Migraciones reversibles
 
+### Seguridad
+
+* Hashing de contraseñas
+* bcrypt
+* JWT
+* Access Tokens
+* Bearer Authentication
+* Autorización
+* RBAC (Role Based Access Control)
+
 ---
 
 ## Test Doubles
@@ -524,16 +583,21 @@ qa-automation-lab/
 │       └── ...
 │
 ├── app/
-│   ├── main.py
-│   ├── schemas.py
-│   ├── models.py
-│   ├── database.py
-│   ├── dependencies.py
+│   ├── database/
+│   │   ├── connection.py
+│   │   └── dependencies.py
+│   ├── models/
+│   │   ├── role_model.py
+│   │   └── user_model.py
 │   ├── routes/
 │   │   └── users.py
-│   └── security/
-│       ├── jwt.py
-│       └── password.py
+│   ├── schemas/
+│   │   └── user.py
+│   ├── security/
+│   │   ├── dependencies.py
+│   │   ├── jwt.py
+│   │   └── password.py
+│   └── main.py
 │
 ├── docs/
 │   ├── alembic.md
@@ -626,6 +690,7 @@ qa-automation-lab/
 * [x] Aplicar migración en users_test
 * [x] Verificar esquema
 * [x] Hashing con bcrypt
+* [x] Reglas de contraseñas
 * [x] Testing de validación de contraseñas
 * [x] Testing de persistencia de hashes
 * [x] Login
@@ -636,11 +701,16 @@ qa-automation-lab/
 
 #### Sprint 3.2
 
-* [ ] Expiración de tokens
-* [ ] Dependencia get_current_user
-* [ ] Roles
-* [ ] Reglas de autenticación
-* [ ] Testing avanzado
+* [x] Expiración de tokens
+* [x] Dependencia get_current_user
+* [x] Protección de endpoints
+* [x] Reglas de autenticación
+* [x] Testing avanzado
+* [x] Sistema de roles
+* [x] Tabla de roles
+* [x] Foreign Keys
+* [x] Relaciones SQLAlchemy
+* [x] Dependencia require_admin
 
 #### Sprint 3.3
 
