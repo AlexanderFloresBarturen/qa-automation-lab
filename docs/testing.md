@@ -12,6 +12,26 @@ Garantizar que las pruebas automatizadas:
 
 ---
 
+## Arquitectura de Seguridad
+
+```text
+Login
+↓
+JWT
+↓
+Authorization Header
+↓
+get_current_user()
+↓
+Usuario autenticado
+↓
+Reglas de autorización
+↓
+Endpoint
+```
+
+---
+
 ## Arquitectura de Testing
 
 ```text
@@ -337,6 +357,138 @@ def created_user(client, valid_user_payload):
 
 Permite reutilizar usuarios ya creados.
 
+## Fixture de Actualización Parcial
+
+Ejemplo:
+
+```python
+@pytest.fixture
+def patch_user(client):
+    # El '*' obliga que todo lo que está a la derecha se pase con nombre
+    def _patch_user(id, *, name = False, email = False, age = False, headers = ""):
+        patch_payload = {}
+        if name:
+            patch_payload["name"] = "Diego Armando"
+        if email:
+            patch_payload["email"] = f"{uuid.uuid4()}@yahoo.com"
+        if age:
+            patch_payload["age"] = 36
+        
+        return client.patch(f"/users/{id}", json=patch_payload, headers=headers)
+    
+    return _patch_user # <-- Importante no olvidar esta línea
+```
+
+Permite actualizar parcialmente a un usuario, el payload que se genera permite que se envíen 1 o todos los campos.
+
+## Fixture loged_user
+
+Algunos tests requieren un usuario autenticado
+
+```python
+@pytest.fixture
+def loged_user(client, valid_user_payload):
+    created_response = client.post("/users", json=valid_user_payload)
+    created_body = created_response.json()
+
+    payload = {
+        "username": valid_user_payload["email"],
+        "password": valid_user_payload["password"]
+    }
+    login_response = client.post("/users/login", data=payload)
+    login_body = login_response.json()
+
+    assert created_response.status_code == 201
+    assert login_response.status_code == 200
+
+    created_body["token"] = login_body["access_token"]
+
+    return created_body
+```
+
+Permite reutilizar usuarios autenticados en los tests de endpoints protegidos.
+
+---
+
+## Testing de JWT
+
+Los endpoints protegidos utilizan Bearer Authentication.
+
+Cabecera utilizada:
+
+```http
+Authorization: Bearer <token>
+```
+
+Ejemplo:
+
+```python
+headers = {
+    "Authorization": f"Bearer {token}"
+}
+```
+
+Los tests verifican:
+
+* Token válido
+* Token inválid
+* Ausencia de token
+* Usuario inactivo
+
+---
+
+## Testing de Autorización
+
+La API diferencia entre:
+
+### Autenticación
+
+Verifica la identidad del usuario.
+
+Ejemplos:
+
+```text
+401 Unauthorized
+```
+
+* Token inválido
+* Token expirado
+* Usuario inexistente
+* Usuario inactivo
+
+### Autorización
+
+Verifica si el usuario tiene permisos para acceder al recurso.
+
+Ejemplos:
+
+```text
+403 Forbidden
+```
+
+* Usuario intenta consultar otro perfil
+* Usuario intenta modificar otro perfil
+* Usuario intenta eliminar otro perfil
+
+---
+
+## Testing de Roles
+
+La aplicación utiliza Role Based Access Control (RBAC).
+
+Roles disponibles:
+
+```text
+admin
+user
+```
+
+Las prueba verifican:
+
+* Usuario normal sin acceso a recursos administrativos
+* Usuario administrador con acceso a recursos administrativos
+* Protección mediante require_admin()
+
 ---
 
 ## Ventajas del Enfoque
@@ -465,3 +617,9 @@ No depender de registros preexistentes.
 * Cada test debe ser independiente de los demás.
 * El aislamiento mediante transacciones es más eficiente que borrar registros manualmente.
 * Compartir la misma sesión entre Pytest y FastAPI es fundamental para que el rollback funcione correctamente.
+* JWT permite autenticar usuarios mediante Access Tokens.
+* Los endpoints protegidos deben validar el token antes de ejecutar lógica de negocio.
+* La autenticación y la autorización son conceptos distintos.
+* Los códigos 401 y 403 representan errores diferentes.
+* Role Based Access Control (RBAC) permite restringir funcionalidades según el rol del usuario.
+* Los fixtures pueden utilizarse para generar usuarios autenticados reutilizables.
