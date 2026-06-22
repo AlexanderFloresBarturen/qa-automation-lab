@@ -39,7 +39,7 @@ Proyecto práctico de entrenamiento en QA Automation utilizando Python, enfocado
 
 ## Estado actual
 
-### Sprint 1 - Gestión de Usuarios
+### Gestión de Usuarios
 
 #### Backend Implementado
 
@@ -129,6 +129,33 @@ Características:
 * Permite reutilizar emails pertenecientes a usuarios eliminados lógicamente
 * Actualiza únicamente los campos enviados
 
+##### Login
+
+```http
+POST /users/login
+```
+
+Características:
+
+* Autenticación mediante JWT
+* Utiliza OAuth2 Password Flow
+* Verifica contraseñas mediante bcrypt
+* Retorna Access Token
+* Retorna 401 para credenciales inválidas
+* Retorna 423 para cuentas bloqueadas
+
+##### Perfil Actual
+
+```http
+GET /users/test/me
+```
+
+Características:
+
+* Requiere autenticación
+* Obtiene el usuario asociado al JWT
+* No requiere conocer el ID del usuario
+
 ---
 
 ## Reglas de Negocio
@@ -162,6 +189,20 @@ Características:
 * Los endpoints protegidos requieren Bearer Token.
 * Los usuarios inactivos no pueden autenticarse.
 
+### Roles
+
+* Todo usuario registrado recibe automáticamente el rol user.
+* Los administradores se asignan manualmente.
+* Los recursos administrativos requieren permisos de administrador.
+
+### Bloqueo de cuenta
+
+* Después de 5 intentos fallidos consecutivos la cuenta se bloquea
+* El bloqueo dura 15 minutos.
+* Durante el bloqueo el login retorna HTTP 423.
+* Cuando el bloqueo expira el contador de intentos fallidos se reinicia automáticamente.
+* Un login exitoso reinicia el contador de intentos fallidos.
+
 ---
 
 ## Persistencia
@@ -193,15 +234,17 @@ Ubuntu VM
 
 ### Tabla Users
 
-| Campo         | Tipo        |
-| ------------- | ----------- |
-| id            | Integer     |
-| role_id       | Integer (FK)|
-| name          | String      |
-| email         | String      |
-| age           | Integer     |
-| is_active     | Boolean     |
-| password_hash | String      |
+| Campo                  | Tipo         |
+| ---------------------- | ------------ |
+| id                     | Integer      |
+| role_id                | Integer (FK) |
+| name                   | String       |
+| email                  | String       |
+| age                    | Integer      |
+| is_active              | Boolean      |
+| password_hash          | String       |
+| failed_login_attempts  | Integer      |
+| locked_until           | DateTime     |
 
 ### Tablas Roles
 
@@ -333,6 +376,11 @@ alembic/
 * Login exitoso
 * Usuario inexistente
 * Contraseña incorrecta
+* Incremento de intentos fallidos
+* Bloqueo tras 5 intentos fallidos
+* Usuario bloqueado
+* Reinicio de contador tras login exitoso
+* Reinicio automático tras expiración del bloqueo
 
 #### POST /users/test/me
 
@@ -353,6 +401,8 @@ alembic/
 * `verify_password()` valide correctamente el hash almacenado
 
 ### Autorización
+
+#### Endpoints Protegidos
 
 * Usuario consulta su propio perfil
 * Usuario intenta consultar otro perfil
@@ -508,6 +558,14 @@ Beneficios:
 * Verificación de UPDATE vs INSERT
 * Verificación de PATCH vs INSERT
 
+### SQLAlchemy
+
+* Relationships
+* Foreign Keys
+* Identity map
+* Session Refresh
+* Session Expunge
+
 ### Gestión de Esquema
 
 * Alembic
@@ -525,10 +583,14 @@ Beneficios:
 * Hashing de contraseñas
 * bcrypt
 * JWT
+* OAuth2
 * Access Tokens
 * Bearer Authentication
+* Expiración de Tokens
+* Autenticación
 * Autorización
 * RBAC (Role Based Access Control)
+* Bloqueo de cuentas
 
 ---
 
@@ -714,9 +776,9 @@ qa-automation-lab/
 
 #### Sprint 3.3
 
-* [ ] Bloqueo de cuenta
-* [ ] Recuperación de contraseña
+* [x] Bloqueo de cuenta
 * [ ] Tokens de recuperación
+* [ ] Recuperación de contraseña
 * [ ] Testing de autenticación
 
 ### Sprint 4 - Automatización Avanzada
