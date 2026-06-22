@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse
 from app.database.dependencies import get_db
@@ -226,19 +227,48 @@ def login(
 
     if not existing_user:
         raise HTTPException(
-            status_code= 401,
-            detail= "Invalid credentials"
+            status_code = 401,
+            detail = "Invalid credentials"
         )
+    
+    if (existing_user.locked_until is not None and existing_user.locked_until > datetime.now()):
+        raise HTTPException(
+            status_code = 423,
+            detail = "Account locked"
+        )
+
+    if (existing_user.locked_until is not None and existing_user.locked_until <= datetime.now()):
+        existing_user.failed_login_attempts = 0
+        existing_user.locked_until = None
+        db.commit()
     
     if not verify_password(
         form_data.password,
         existing_user.password_hash
     ):
-        raise HTTPException(
-            status_code= 401,
-            detail= "Invalid credentials"
-        )
+        existing_user.failed_login_attempts += 1
+
+        if existing_user.failed_login_attempts >= 5:
+            existing_user.locked_until = (datetime.now() + timedelta(minutes=15))
+        
+        db.commit()
+        
+        if existing_user.failed_login_attempts >= 5:
+            raise HTTPException (
+                status_code = 423,
+                detail = "Account locked"
+            )
+        else:
+            raise HTTPException(
+                status_code = 401,
+                detail = "Invalid credentials"
+            )
     
+    existing_user.failed_login_attempts = 0
+    existing_user.locked_until = None
+
+    db.commit()
+
     access_token = create_access_token(existing_user.id)
 
     return {

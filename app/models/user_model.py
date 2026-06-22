@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from app.database.connection import Base
@@ -22,3 +22,7 @@ class UserModel(Base):
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False)
 
     role = relationship("RoleModel", back_populates="users")
+
+    failed_login_attempts = Column(Integer, nullable=False, default=0)
+
+    locked_until = Column(DateTime, nullable=True)
