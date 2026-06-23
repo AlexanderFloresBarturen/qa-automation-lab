@@ -176,6 +176,20 @@ Características:
 * Reinicia el contador de intentos fallidos
 * Desbloquea la cuenta
 
+##### Listar usuarios
+
+```http
+POST /users/reset-password
+```
+
+Características:
+
+* Requiere rol admin
+* Retorna únicamente usuario activos
+* Utiliza autorización basada en RBAC
+* Retorna 403 para usuarios sin privilegios administrativos
+* Retorna 401 para usuarios no autenticados
+
 ##### Perfil Actual
 
 ```http
@@ -226,6 +240,35 @@ Características:
 * Todo usuario registrado recibe automáticamente el rol user.
 * Los administradores se asignan manualmente.
 * Los recursos administrativos requieren permisos de administrador.
+* La autorización se implementa mediante la dependencia `require_admin()`
+
+### Autorización
+
+La aplicación implementa dos niveles de control de acceso.
+
+#### Basado en Propietario (Ownership)
+
+Un usuario únicamente puede:
+
+* Consultar su propio perfil
+* Actualizar su propio perfil
+* Eliminar su propia cuenta
+
+Intentar acceder a recursos de otros usuarios retorna:
+
+```text
+403 Forbidden
+```
+
+#### Basado en Roles (RBAC)
+
+Algunos recursos requieren privilegios administrativos. Ejemplo:
+
+```http
+GET /users
+```
+
+Solo usuarios con rol `admin` pueden acceder a ellos.
 
 ### Bloqueo de Cuenta
 
@@ -367,6 +410,8 @@ alembic/
 * patch_user
 * loged_user
 * get_token
+* user_reset_password_payload
+* admin_user
 
 ### Cobertura Actual
 
@@ -450,6 +495,13 @@ alembic/
 * Actualización de hash
 * Desbloqueo de cuenta
 * Flujo completo de recuperación de contraseña
+
+#### GET /users
+
+* Acceso exitoso para administrador
+* Acceso denegado para usuario normal
+* Acceso sin token
+* Acceso con token inválido
 
 #### POST /users/test/me
 
@@ -745,6 +797,7 @@ qa-automation-lab/
 │   ├── test_database.py
 │   ├── test_delete_user.py
 │   ├── test_get_user.py
+│   ├── test_get_users.py
 │   ├── test_patch_user.py
 │   └── test_update_user.py
 │
@@ -845,6 +898,9 @@ qa-automation-lab/
 * [x] Foreign Keys
 * [x] Relaciones SQLAlchemy
 * [x] Dependencia require_admin
+* [x] RBAC aplicado a endpoints reales
+* [x] Endpoint administrativo
+* [x] Testing de roles
 
 #### Sprint 3.3
 
