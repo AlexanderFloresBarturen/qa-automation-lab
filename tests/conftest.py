@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.main import app
 from app.database.dependencies import get_db
+from app.models.user_model import UserModel
 
 import pytest
 import uuid
@@ -173,3 +174,30 @@ def user_reset_password_payload(client, created_user):
         }
     
     return _user_reset_password_payload
+
+@pytest.fixture
+def admin_user(db, client, valid_user_payload):
+    created_response = client.post("/users", json=valid_user_payload)
+    created_body = created_response.json()
+
+    user = db.query(UserModel).filter(
+        UserModel.id == created_body["id"]
+    ).first()
+
+    user.role_id = 1
+
+    db.commit()
+
+    payload = {
+        "username": valid_user_payload["email"],
+        "password": valid_user_payload["password"]
+    }
+    login_response = client.post("/users/login", data=payload)
+    login_body = login_response.json()
+
+    assert created_response.status_code == 201
+    assert login_response.status_code == 200
+
+    created_body["token"] = login_body["access_token"]
+
+    return created_body

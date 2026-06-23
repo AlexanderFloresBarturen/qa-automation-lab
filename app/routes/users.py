@@ -82,6 +82,20 @@ def get_user(
 
 #endregion
 
+#region get_users
+@router.get("/", response_model=list[UserResponse])
+def get_users(
+    current_user: UserModel = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    users = db.query(UserModel).filter(
+        UserModel.is_active.is_(True)
+    ).all()
+
+    return users
+
+#endregion
+
 #region delete_user
 @router.delete("/{user_id}", status_code=204)
 def delete_user(
