@@ -81,9 +81,10 @@ GET /users/{user_id}
 
 Características:
 
-* Devuelve usuarios activos
-* Retorna 404 cuando el usuario no existe
-* Retorna 404 cuando el usuario fue eliminado lógicamente
+* Requeire autenticación
+* Un usuario solo puede consultar su propio perfil
+* Retorna 403 cuando intenta acceder al perfil de otro usuario
+* Los usuarios inactivos no pueden autenticarse
 
 ##### Eliminar Usuario
 
@@ -93,6 +94,7 @@ DELETE /users/{user_id}
 
 Características:
 
+* Requeire autenticación
 * Soft Delete
 * No elimina físicamente el registro
 * Cambia el campo `is_active` a `False`
@@ -106,9 +108,9 @@ PUT /users/{user_id}
 
 Características
 
+* Requeire autenticación
 * Actualiza nombre, email y edad
 * Mantiene el mismo ID
-* Retorna 404 cuando el usuario no existe o fue eliminado lógicamente
 * Retorna 409 cuando el email ya está siendo utilizado por otro usuario activo
 * No crea registros nuevos durante la actualización
 
@@ -119,12 +121,12 @@ PATCH /users/{user_id}
 
 Características:
 
+* Requeire autenticación
 * Permite actualizar uno o más campos del usuario
 * Los campos son opcionales
 * No permite payload vacío
 * No permite valores null
 * Mantiene el mismo ID
-* Retorna 404 cuando el usuario no existe o fue eliminado lógicamente
 * Retorna 409 cuando el email ya está siendo utilizado por otro usuario activo
 * Permite reutilizar emails pertenecientes a usuarios eliminados lógicamente
 * Actualiza únicamente los campos enviados
@@ -143,6 +145,36 @@ Características:
 * Retorna Access Token
 * Retorna 401 para credenciales inválidas
 * Retorna 423 para cuentas bloqueadas
+
+##### Solicitar Recuperación de Contraseña
+
+```http
+POST /users/forgot-password
+```
+
+Características:
+
+* Genera token de recuperación
+* Invalida tokens anteriores del usuario
+* Los tokens expiran en 15 minutos
+* Retorna HTTP 200 incluso si el email no existe
+* Evita email enumeration
+
+##### Restableces Contraseña
+
+```http
+POST /users/reset-password
+```
+
+Características:
+
+* Requiere token válido
+* Verifica expiración del token
+* Verifica que el token no haya sido utilizado
+* Actualiza el password_hash
+* Invalida el token utilizado
+* Reinicia el contador de intentos fallidos
+* Desbloquea la cuenta
 
 ##### Perfil Actual
 
@@ -195,13 +227,22 @@ Características:
 * Los administradores se asignan manualmente.
 * Los recursos administrativos requieren permisos de administrador.
 
-### Bloqueo de cuenta
+### Bloqueo de Cuenta
 
 * Después de 5 intentos fallidos consecutivos la cuenta se bloquea
 * El bloqueo dura 15 minutos.
 * Durante el bloqueo el login retorna HTTP 423.
 * Cuando el bloqueo expira el contador de intentos fallidos se reinicia automáticamente.
 * Un login exitoso reinicia el contador de intentos fallidos.
+
+### Recuperación de Contraseñas
+
+* Los tokens de recuperación son de un solo uso.
+* Los tokens expiran después de 15 minutos.
+* Un usuario solo puede tener un token activo.
+* Solicitar un nuevo token invalida los anteriores.
+* El cambio de contraseña invalida el token utilizado.
+* El cambio de contraseña desbloquea la cuenta.
 
 ---
 
@@ -257,6 +298,17 @@ Roles inciales:
 
 1. admin
 2. user
+
+### Tabla PasswordResetTokens
+
+| Campo         | Tipo         |
+| ------------- | ------------ |
+| id            | Integer      |
+| user_id       | Integer (FK) |
+| token         | String       |
+| used          | Boolean      |
+| created_at    | DateTime     |
+| expires_at    | DateTime     |
 
 ### Base de Datos de Testing
 
@@ -381,6 +433,23 @@ alembic/
 * Usuario bloqueado
 * Reinicio de contador tras login exitoso
 * Reinicio automático tras expiración del bloqueo
+
+#### POST /users/forgot-password
+
+* Usuario existente
+* Usuario inexistente
+* Invalidación de tokens anteriores
+
+#### POST /users/reset-password
+
+* Token válido
+* Token inválido
+* Token usado
+* Token expirado
+* Contraseña inválida
+* Actualización de hash
+* Desbloqueo de cuenta
+* Flujo completo de recuperación de contraseña
 
 #### POST /users/test/me
 
@@ -650,6 +719,7 @@ qa-automation-lab/
 │   │   └── dependencies.py
 │   ├── models/
 │   │   ├── role_model.py
+│   │   ├── token_model.py
 │   │   └── user_model.py
 │   ├── routes/
 │   │   └── users.py
@@ -659,6 +729,8 @@ qa-automation-lab/
 │   │   ├── dependencies.py
 │   │   ├── jwt.py
 │   │   └── password.py
+│   ├── utils/
+│   │   └── password_validator.py
 │   └── main.py
 │
 ├── docs/
@@ -777,9 +849,9 @@ qa-automation-lab/
 #### Sprint 3.3
 
 * [x] Bloqueo de cuenta
-* [ ] Tokens de recuperación
-* [ ] Recuperación de contraseña
-* [ ] Testing de autenticación
+* [x] Tokens de recuperación
+* [x] Recuperación de contraseña
+* [x] Testing de autenticación
 
 ### Sprint 4 - Automatización Avanzada
 
@@ -850,3 +922,5 @@ qa-automation-lab/
 * Una sesión SQLAlchemy puede asociarse a una conexión existente mediante bind=connection.
 * El rollback debe ejecutarse sobre la misma transacción utilizada por los endpoints.
 * Los tests de integración pueden compartir una sesión mediante Dependency Overrides sin perder aislamiento.
+* Los tokens de recuperación deben ser de un solo uso.
+* Los tests pueden manipular fechas directamente para validar expiraciones sin esperar tiempo real.
