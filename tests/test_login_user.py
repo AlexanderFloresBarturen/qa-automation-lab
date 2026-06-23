@@ -94,9 +94,9 @@ def test_login_increments_failed_attempts(db, client, valid_user_payload):
     
     assert login_body["detail"] == "Invalid credentials"
     assert user_before.failed_login_attempts == 0
-    assert user_before.locked_until == None
+    assert user_before.locked_until is None
     assert user_after.failed_login_attempts == 1
-    assert user_after.locked_until == None
+    assert user_after.locked_until is None
 
 def test_account_locked_after_five_attempts(db, client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
@@ -125,7 +125,7 @@ def test_account_locked_after_five_attempts(db, client, valid_user_payload):
     
     assert login_body["detail"] == "Account locked"
     assert user.failed_login_attempts == 5
-    assert user.locked_until != None
+    assert user.locked_until is not None
     assert user.locked_until > datetime.now()
 
 def test_locked_account_cannot_login(client, valid_user_payload):
@@ -182,7 +182,7 @@ def test_lock_expires_and_counter_resets(db, client, valid_user_payload):
     assert login_response.status_code == 401
 
     assert user.failed_login_attempts == 1
-    assert user.locked_until == None
+    assert user.locked_until is None
 
 def test_successful_login_resets_counter(db, client, valid_user_payload):
     create_response = client.post("/users", json=valid_user_payload)
@@ -207,7 +207,7 @@ def test_successful_login_resets_counter(db, client, valid_user_payload):
     assert login_response.status_code == 200
 
     assert user.failed_login_attempts == 0
-    assert user.locked_until == None
+    assert user.locked_until is None
 
 #endregion
 

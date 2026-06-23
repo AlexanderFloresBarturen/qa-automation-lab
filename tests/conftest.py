@@ -158,3 +158,18 @@ def get_token(client):
         return login_body["access_token"]
     
     return _get_token
+
+@pytest.fixture
+def user_reset_password_payload(client, created_user):
+    def _user_reset_password_payload(*, password="NewPassword123!"):
+        fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+        fp_body = fp_response.json()
+
+        assert fp_response.status_code == 200
+
+        return {
+            "token": fp_body["token"],
+            "new_password": password
+        }
+    
+    return _user_reset_password_payload

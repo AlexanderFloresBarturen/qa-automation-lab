@@ -25,6 +25,7 @@ el modelo antes de contruir la metadata
 """
 from app.models.user_model import UserModel
 from app.models.role_model import RoleModel
+from app.models.token_model import PasswordResetTokenModel
 
 target_metadata = Base.metadata
 

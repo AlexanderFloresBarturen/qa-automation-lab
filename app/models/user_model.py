@@ -21,8 +21,9 @@ class UserModel(Base):
 
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False)
 
-    role = relationship("RoleModel", back_populates="users")
-
     failed_login_attempts = Column(Integer, nullable=False, default=0)
 
     locked_until = Column(DateTime, nullable=True)
+
+    role = relationship("RoleModel", back_populates="users")
+    password_reset_tokens = relationship("PasswordResetTokenModel", back_populates="user")

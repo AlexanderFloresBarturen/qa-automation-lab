@@ -2,11 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+import secrets
 
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse
+from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse
 from app.database.dependencies import get_db
 from app.models.user_model import UserModel
 from app.models.role_model import RoleModel
+from app.models.token_model import PasswordResetTokenModel
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
 from app.security.dependencies import get_current_user, require_admin
@@ -275,6 +277,76 @@ def login(
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+#endregion
+
+#region Recuperación de contraseña
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(UserModel).filter(
+        UserModel.email == request.email,
+        UserModel.is_active.is_(True)
+    ).first()
+
+    if not existing_user:
+        return {"message": "If the account exists, a recovery token has been generated"}
+    
+    active_tokens = db.query(PasswordResetTokenModel).filter(
+        PasswordResetTokenModel.user_id == existing_user.id,
+        PasswordResetTokenModel.used.is_(False)
+    ).all()
+
+    for token in active_tokens:
+        token.used = True
+    
+    new_token = secrets.token_urlsafe(32)
+
+    reset_token = PasswordResetTokenModel(
+        user_id = existing_user.id,
+        token = new_token,
+        used = False,
+        created_at = datetime.now(),
+        expires_at = datetime.now() + timedelta(minutes=15)
+    )
+
+    db.add(reset_token)
+    db.commit()
+
+    return {
+        "message": "Recovery token generated",
+        "token": new_token
+    }
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    reset_token = db.query(PasswordResetTokenModel).filter(
+        PasswordResetTokenModel.token == request.token
+    ).first()
+
+    if (not reset_token or reset_token.used or reset_token.expires_at < datetime.now()):
+        raise HTTPException(
+            status_code = 400,
+            detail = "Invalid token"
+        )
+    
+    user = reset_token.user
+
+    user.password_hash = hash_password(request.new_password)
+
+    user.failed_login_attempts = 0
+    user.locked_until = None
+
+    reset_token.used = True
+
+    db.commit()
+
+    return {"message": "Password successfully reset"}
 
 #endregion
 
