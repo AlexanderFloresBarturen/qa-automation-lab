@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 import pytest
+from unittest.mock import patch, ANY
 
 from app.models.token_model import PasswordResetTokenModel
 from app.models.user_model import UserModel
+from app.services.email_service import send_password_reset_email
 from tests.helpers import assert_reset_password_invalid_token_response
 
 #region forgot-password
@@ -68,6 +70,54 @@ def test_forgot_password_invalidates_previous_token(db, client, created_user):
             assert token.used is False
         else:
             assert token.used is True
+
+#region Mocks
+"""
+Se parchea donde la función es utilizada -> app.routes.users 
+porque en esa ruta es donde forgot-password() llama a la función
+send_password_reset_email()
+"""
+@patch("app.routes.users.send_password_reset_email")
+def test_forgot_password_calls_email_service(mock_send_email, client, created_user):
+    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+
+    assert fp_response.status_code == 200
+
+    mock_send_email.assert_called_once()
+    mock_send_email.assert_called_once_with(email=created_user["email"], token=ANY)
+
+@patch("app.routes.users.send_password_reset_email")
+def test_forgot_password_email_service_unavailable(mock_send_email, client, created_user):
+    mock_send_email.return_value = False
+
+    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_body = fp_response.json()
+
+    assert fp_response.status_code == 500
+
+    assert len(fp_body) == 1
+
+    assert "detail" in fp_body
+
+    assert isinstance(fp_body["detail"], str)
+
+    assert fp_body["detail"] == "Email service unavailable"
+
+    mock_send_email.assert_called_once()
+    mock_send_email.assert_called_once_with(email=created_user["email"], token=ANY)
+
+@patch("app.routes.users.send_password_reset_email", wraps=send_password_reset_email)
+def test_forgot_password_spy_email_service(spy_send_email, client, created_user):
+    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+
+    assert fp_response.status_code == 200
+
+    spy_send_email.assert_called_once()
+
+    assert spy_send_email.call_count == 1
+    assert spy_send_email.call_args.kwargs["email"] == created_user["email"]
+
+#endregion
 
 #endregion
 

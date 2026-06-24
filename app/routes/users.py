@@ -12,6 +12,7 @@ from app.models.token_model import PasswordResetTokenModel
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
 from app.security.dependencies import get_current_user, require_admin
+from app.services.email_service import send_password_reset_email
 
 router = APIRouter()
 
@@ -328,6 +329,14 @@ def forgot_password(
 
     db.add(reset_token)
     db.commit()
+
+    email_sent = send_password_reset_email(email=existing_user.email, token=new_token)
+
+    if not email_sent:
+        raise HTTPException(
+            status_code = 500,
+            detail = "Email service unavailable"
+        )
 
     return {
         "message": "Recovery token generated",
