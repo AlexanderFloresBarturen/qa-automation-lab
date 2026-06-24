@@ -117,7 +117,48 @@ def test_forgot_password_spy_email_service(spy_send_email, client, created_user)
     assert spy_send_email.call_count == 1
     assert spy_send_email.call_args.kwargs["email"] == created_user["email"]
 
+@patch("app.routes.users.send_password_reset_email")
+def test_forgot_password_email_service_exception(mock_send_email, client, created_user):
+    mock_send_email.side_effect = ConnectionError("SMTP server unavailable")
+
+    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_body = fp_response.json()
+
+    assert fp_response.status_code == 500
+
+    assert len(fp_body) == 1
+
+    assert "detail" in fp_body
+
+    assert isinstance(fp_body["detail"], str)
+
+    assert fp_body["detail"] == "Email service unavailable"
+
 #endregion
+
+"""
+Monkeypatch
+Su objetivo es reemplazar (durante la ejecución) funciones, constantes, variables de entorno, etc.
+"""
+def test_forgot_password_monkeypatch_email_failure(monkeypatch, client, created_user):
+    def fake_email_service(email: str, token:str):
+        # print("SOY FAKE")
+        return False
+    
+    monkeypatch.setattr("app.routes.users.send_password_reset_email", fake_email_service)
+
+    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_body = fp_response.json()
+
+    assert fp_response.status_code == 500
+
+    assert len(fp_body) == 1
+
+    assert "detail" in fp_body
+
+    assert isinstance(fp_body["detail"], str)
+
+    assert fp_body["detail"] == "Email service unavailable"
 
 #endregion
 

@@ -330,7 +330,13 @@ def forgot_password(
     db.add(reset_token)
     db.commit()
 
-    email_sent = send_password_reset_email(email=existing_user.email, token=new_token)
+    try:
+        email_sent = send_password_reset_email(email=existing_user.email, token=new_token)
+    except Exception:
+        raise HTTPException(
+            status_code = 500,
+            detail = "Email service unavailable"
+        )
 
     if not email_sent:
         raise HTTPException(
