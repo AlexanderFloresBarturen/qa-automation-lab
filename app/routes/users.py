@@ -67,19 +67,8 @@ def get_user(
             status_code= 403,
             detail= "Forbidden"
         )
-    
-    user = db.query(UserModel).filter(
-        UserModel.id == user_id,
-        UserModel.is_active.is_(True)
-    ).first()
-
-    if not user:
-        raise HTTPException(
-            status_code = 404,
-            detail = "User not found"
-        )
-    
-    return user
+        
+    return current_user
 
 #endregion
 
@@ -110,18 +99,7 @@ def delete_user(
             detail= "Forbidden"
         )
     
-    user = db.query(UserModel).filter(
-        UserModel.id == user_id,
-        UserModel.is_active.is_(True)
-    ).first()
-
-    if not user:
-        raise HTTPException(
-            status_code = 404,
-            detail = "User not found"
-        )
-    
-    user.is_active = False
+    current_user.is_active = False
 
     db.commit()
 
@@ -143,17 +121,6 @@ def update_user(
             detail= "Forbidden"
         )
     
-    user_to_update = db.query(UserModel).filter(
-        UserModel.id == user_id,
-        UserModel.is_active.is_(True)
-    ).first()
-
-    if not user_to_update:
-        raise HTTPException(
-            status_code = 404,
-            detail = "User not found"
-        )
-    
     existing_email = db.query(UserModel).filter(
         UserModel.email == user.email,
         UserModel.id != user_id,
@@ -166,14 +133,14 @@ def update_user(
             detail = "Email already exists"
         )
     
-    user_to_update.name = user.name
-    user_to_update.email = user.email
-    user_to_update.age = user.age
+    current_user.name = user.name
+    current_user.email = user.email
+    current_user.age = user.age
 
     db.commit()
-    db.refresh(user_to_update)
+    db.refresh(current_user)
 
-    return user_to_update
+    return current_user
 
 #endregion
 
@@ -189,17 +156,6 @@ def partial_update_user(
         raise HTTPException(
             status_code= 403,
             detail= "Forbidden"
-        )
-    
-    user_to_update = db.query(UserModel).filter(
-        UserModel.id == user_id,
-        UserModel.is_active.is_(True)
-    ).first()
-
-    if not user_to_update:
-        raise HTTPException(
-            status_code = 404,
-            detail = "User not found"
         )
     
     """
@@ -222,12 +178,12 @@ def partial_update_user(
             )
     
     for field, value in update_data.items():
-        setattr(user_to_update, field, value)
+        setattr(current_user, field, value)
     
     db.commit()
-    db.refresh(user_to_update)
+    db.refresh(current_user)
 
-    return user_to_update
+    return current_user
 
 #endregion
 
