@@ -397,6 +397,190 @@ alembic/
 
 ---
 
+## Configuración Centralizada
+
+### Objetivo
+
+La aplicación utiliza una configuración centralizada para evitar la duplicación de parámetros entre:
+
+* FastAPI
+* Alembic
+* Pytest
+
+Toda la configuración del proyecto se encuentra en:
+
+```text
+app/core/settings.py
+```
+
+Esto permite mantener una única fuente de verdad para la configuración del sistema.
+
+### Configuración Gestionada
+
+Actualmente `Settings` centraliza:
+
+#### Base de datos
+
+* Development Database
+* Test Database
+* Current Database
+
+#### JWT
+
+* Secret Key
+* Algorithm
+* Token Expiration
+
+#### Seguridad
+
+* Maximum Login Attempts
+* Account Lock Duration
+* Password Reset Token Expiration
+
+### Cambio de Entorno
+
+La clase `Settings` encapsula el cambio entre la base de desarrollo y la de pruebas.
+
+```python
+settings.use_development_database()
+
+settings.use_test_database()
+```
+
+El resto de la aplicación nunca necesita conocecer cuál es la base activa. Siempre utiliza:
+
+```python
+settings.DATABASE_URL
+```
+
+### Estado Actual
+
+Además de la URL activa, `Settings` mantiene el entorno actualmente seleccionado.
+
+```python
+settings.CURRENT_DATABASE
+```
+
+Valores disponibles:
+
+1. development
+2. test
+
+Esto permite conocer en cualquier momento qué base está utilizando la aplicación.
+
+También dispone de propiedades auxiliares:
+
+```python
+settings.is_development_database
+
+settings.is_test_database
+```
+
+que facilitan realizar comprobaciones sin comparar cadenas de texto.
+
+### Integración con Alembic
+
+Alembic ya no obtiene la URL desde `alembic.ini`.
+
+Durante la inicialización ejecuta:
+
+```python
+config.set_main_option(
+     "sqlalchemy.url",
+     settings.DATABASE_URL
+)
+```
+
+Estos hace que las migraciones utilicen siempre la base de datos actualmente activa.
+
+### Automatización de Testing
+
+Antes de ejecutar la suite de pruebas, Pytest cambia automáticamente el entorno a testing.
+
+Flujo:
+
+```text
+Inicio Pytest
+        │
+        ▼
+settings.use_test_database()
+        │
+        ▼
+DATABASE_URL → users_test
+        │
+        ▼
+Alembic upgrade head
+        │
+        ▼
+Inicio de pruebas
+```
+
+Al finalizar la ejecucion:
+
+```text
+Fin de pruebas
+        │
+        ▼
+settings.use_development_database()
+```
+
+De esta forma:
+
+* Las migraciones siempre se ejecutan sobre users_test.
+* La base de datos de desarrollo nunca se modifica durante las pruebas.
+* El desarrollador no necesita ejecutar manualmente `alembic ugrade head` antes de lanzar la suite.
+
+### ¿Por qué sigue existiendo `test_engine`?
+
+Aunque la aplicación utiliza una configuración centralizada, durante las pruebas FastAPI reemplaza la dependencia `get_db()` mediante `dependency_overrides`.
+
+La infraestructura queda así:
+
+```text
+                    Settings
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+          ▼                         ▼
+   connection.py              alembic/env.py
+          │                         │
+          ▼                         ▼
+   users (desarrollo)      users / users_test
+                                   │
+                                   ▼
+                           pytest_sessionstart()
+                                   │
+                                   ▼
+                        settings.use_test_database()
+                                   │
+                                   ▼
+                           alembic upgrade head
+                                   │
+                                   ▼
+                             test_engine
+                                   │
+                                   ▼
+                      dependency_overrides(get_db)
+                                   │
+                                   ▼
+                              users_test
+```
+
+`test_engine` continúa existinedo porque el `engine` de la aplicación se crea durante la importación del módulo (`connection.py`). En ese momento todavía no se ha ejecutado `pytest_sessionstart()`. En lugar de recrear el `engine` principal, las pruebas utilizan un `test_engine` independiente y redirigen todas las dependencias de base de datos hacia el mediente `dependency_overrides`.
+
+Este enfoque mantiene completamente aisladas als bases de desarrollo y de pruebas, evita efectos secundario sobre el `engine` principal y simplifica la infraestructura de testing.
+
+### Beneficios
+
+* Una única fuente de configuración (`Settings`).
+* Eliminación de URLs duplicadas en distintos módulos.
+* FastAPI, Alembic y Pytest comparten la misma configuración.
+* Las migraciones de testing de ejecutan automáticamente.
+* El entorno de desarrollo permanece aislado del entorno de pruebas.
+* La arquitectura queda preparada para migrar fácilmente a variables de entorno (`.env`) mediante `pydantic-settings` en el futuro.
+
+---
+
 ## Testing
 
 ### Fixtures
@@ -608,7 +792,7 @@ Los resultados de ejecución pueden exportarse a HTML utilizando `pytest-html`
 Generar reporte:
 
 ```python
-pytest --html=report.html --self-contained-html
+pytest --html=reports/report.html --self-contained-html
 ```
 
 Archivo generado:
@@ -766,6 +950,8 @@ qa-automation-lab/
 │       └── ...
 │
 ├── app/
+│   ├── core/
+│   │   └── settings.py
 │   ├── database/
 │   │   ├── connection.py
 │   │   └── dependencies.py
@@ -781,6 +967,8 @@ qa-automation-lab/
 │   │   ├── dependencies.py
 │   │   ├── jwt.py
 │   │   └── password.py
+│   ├── services/
+│   │   └── email_service.py
 │   ├── utils/
 │   │   └── password_validator.py
 │   └── main.py
@@ -791,6 +979,8 @@ qa-automation-lab/
 │   └── testing.md
 │
 ├── tests/
+│   ├── integration/
+│   │   └── test_password_recovery_flow.py
 │   ├── conftest.py
 │   ├── helpers.py
 │   ├── test_create_user.py
@@ -911,14 +1101,28 @@ qa-automation-lab/
 
 ### Sprint 4 - Automatización Avanzada
 
-* [ ] Mocking
-* [ ] Test Doubles
-* [ ] Spy y Stub
-* [ ] Monkeypatch
-* [ ] Testing de servicios externos
-* [ ] Pruebas de integración avanzadas
-* [ ] Reportes HTML avanzados
-* [ ] Métricas de cobertura
+#### 4.1
+
+* [x] Mocking
+* [x] Test Doubles
+* [x] Spy y Stub
+
+#### 4.2
+
+* [x] Monkeypatch
+* [x] Testing de servicios externos
+
+#### 4.3
+
+* [x] Pruebas de integración avanzadas
+
+#### 4.4
+
+* [x] Reportes HTML avanzados
+* [x] Métricas de cobertura
+
+#### 4.5
+
 * [ ] Inicialización automática mediante migraciones
 * [ ] Sincronización users / users_test
 
