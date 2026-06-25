@@ -13,6 +13,7 @@ from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
 from app.security.dependencies import get_current_user, require_admin
 from app.services.email_service import send_password_reset_email
+from app.core.settings import settings
 
 router = APIRouter()
 
@@ -221,12 +222,12 @@ def login(
     ):
         existing_user.failed_login_attempts += 1
 
-        if existing_user.failed_login_attempts >= 5:
-            existing_user.locked_until = (datetime.now() + timedelta(minutes=15))
+        if existing_user.failed_login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
+            existing_user.locked_until = (datetime.now() + timedelta(minutes=settings.ACCOUNT_LOCK_MINUTES))
         
         db.commit()
         
-        if existing_user.failed_login_attempts >= 5:
+        if existing_user.failed_login_attempts >= settings.MAX_LOGIN_ATTEMPTS:
             raise HTTPException (
                 status_code = 423,
                 detail = "Account locked"
@@ -280,7 +281,7 @@ def forgot_password(
         token = new_token,
         used = False,
         created_at = datetime.now(),
-        expires_at = datetime.now() + timedelta(minutes=15)
+        expires_at = datetime.now() + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
     )
 
     db.add(reset_token)

@@ -1,20 +1,41 @@
 from fastapi.testclient import TestClient   # Permite probars APIs sin levantar Uvicorn.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from alembic import command
+from alembic.config import Config
 
 from app.main import app
 from app.database.dependencies import get_db
 from app.models.user_model import UserModel
+from app.core.settings import settings, DatabaseEnvironment
 
 import pytest
 import uuid
 
 #region Configuración de DB de testing
 
-TEST_DATABASE_URL = "postgresql+psycopg://postgres:postgres@192.168.56.2:5432/users_test"
+# Hook de inicio
+def pytest_sessionstart(session):
+    settings.use_test_database()
+
+    assert settings.CURRENT_DATABASE == DatabaseEnvironment.TEST
+
+    alembic_cfg = Config("alembic.ini")
+
+    command.upgrade(alembic_cfg, "head")
+
+    print (f"Running test against: {settings.CURRENT_DATABASE.value} database")
+
+# Hook de finalización
+def pytest_sessionfinish(session, exitstatus):
+    settings.use_development_database()
+
+    assert settings.CURRENT_DATABASE == DatabaseEnvironment.DEVELOPMENT
+
+    print (f"Restoring to: {settings.CURRENT_DATABASE.value} database")
 
 # Crea conexión PostgreSQL para testing
-test_engine = create_engine(TEST_DATABASE_URL)
+test_engine = create_engine(settings.TEST_DATABASE_URL)
 
 # Crea sesiones para consultas
 TestingSessionLocal = sessionmaker(

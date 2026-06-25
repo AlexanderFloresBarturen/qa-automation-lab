@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql+psycopg://postgres:postgres@192.168.56.2:5432/users"
+from app.core.settings import settings
 
 # Crea conexión PostgreSQL
-engine = create_engine(DATABASE_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 # Crea sesiones para consultas
 SessionLocal = sessionmaker(
