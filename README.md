@@ -1101,30 +1101,16 @@ qa-automation-lab/
 
 ### Sprint 4 - Automatización Avanzada
 
-#### 4.1
-
 * [x] Mocking
 * [x] Test Doubles
 * [x] Spy y Stub
-
-#### 4.2
-
 * [x] Monkeypatch
 * [x] Testing de servicios externos
-
-#### 4.3
-
 * [x] Pruebas de integración avanzadas
-
-#### 4.4
-
 * [x] Reportes HTML avanzados
 * [x] Métricas de cobertura
-
-#### 4.5
-
-* [ ] Inicialización automática mediante migraciones
-* [ ] Sincronización users / users_test
+* [x] Inicialización automática mediante migraciones
+* [x] Sincronización users / users_test
 
 ### Sprint 5 - Integración Continua
 
