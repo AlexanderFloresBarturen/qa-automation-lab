@@ -1,625 +1,197 @@
-# Testing y Base de Datos de Pruebas
+> **Documento:** Testing  
+> **Proyecto:** QA Automation Lab  
+> **Última actualización:** Sprint 4  
+> **Estado:** Vigente
+
+# Testing
 
 ## Objetivo
 
-Garantizar que las pruebas automatizadas:
+Este documento describe la estrategia de testing utilizada en el proyecto, la infraestructura que soporta la ejecución de las pruebas y las principales decisiones tomadas para garantizar que la suite sea reproducible, aislada y mantenible.
 
-* Sean reproducibles.
-* No modifiquen datos reales.
-* Sean independientes entre sí.
-* Puedan ejecutarse en cualquier momento.
-* Mantengan una base de datos limpia después de cada test.
+El objetivo no es únicamente validar el correcto funcionamiento de la aplicación, sino construir una infraestructura de pruebas similar a la utilizada en proyectos profesionales de desarrollo backend y QA Automation.
 
 ---
 
-## Arquitectura de Seguridad
+## Filosofía de Testing
 
-```text
-Login
-↓
-JWT
-↓
-Authorization Header
-↓
-get_current_user()
-↓
-Usuario autenticado
-↓
-Reglas de autorización
-↓
-Endpoint
-```
+La estrategia de testing del proyecto se basa en cinco principios fundamentales:
+
+* Independencia entre pruebas.
+* Reproducibilidad.
+* Aislamiento completo del entorno de desarrollo.
+* Automatización del entorno de pruebas.
+* Reutilización mediante fixtures y utilidades comunes.
+
+Cada prueba debe poder ejecutarse de manera individual o como parte de la suite completa, obteniendo siempre el mismo resultado.
 
 ---
 
-## Arquitectura de Testing
+## Infraestructura de Testing
+
+La ejecución de las pruebas utiliza una infraestructura independiente de la aplicación en desarrollo.
 
 ```text
-Pytest
-│
-├── Fixture db
-│
-├── Fixture client
-│
-└── FastAPI
-     │
-     └── Dependency Override
-          │
-          ▼
-     users_test
-```
-
-Todos los tests utilizan la base de datos:
-
-```text
+pytest
+    │
+    ▼
+Fixtures
+    │
+    ▼
+Dependency Overrides
+    │
+    ▼
+test_engine
+    │
+    ▼
 users_test
 ```
 
-Nunca:
-
-```text
-users
-```
+Esta arquitectura permite reutilizar exactamente la misma aplicación FastAPI, sustituyendo únicamente la infraestructura necesaria para conectar con la base de datos de testing.
 
 ---
 
-## Bases de Datos
+## Aislamiento del Entorno
 
-### Desarrollo
+Uno de los principales objetivos del laboratorio es garantizar que las pruebas nunca modifiquen la base de datos de desarrollo.
 
-```text
-users
-```
+Para conseguirlo se implementaron varios mecanismos complementarios:
 
-### Testing
+* Base de datos independiente (`users_test`).
+* `test_engine` exclusivo para testing.
+* `dependency_overrides` para sustituir `get_db()`.
+* Rollback automático mediante transacciones.
+* Migraciones automáticas antes de ejecutar la suite.
 
-```text
-users_test
-```
-
-Separar ambas bases evita que las pruebas modifiquen datos de desarrollo.
+Como resultado, todas las pruebas utilizan un entorno completamente aislado y reproducible.
 
 ---
 
-## Dependency Override
+## Fixtures
 
-FastAPI permite reemplazar dependencias durante los tests.
+La infraestructura de testing se apoya en fixtures reutilizables que eliminan duplicación de código y facilitan la preparación del entorno de pruebas.
 
-Aplicación:
+Entre las principales fixtures se encuentran:
 
-```python
-def get_db():
-    ...
-```
+| Fixture        | Responsabilidad                            |
+| -------------- | ------------------------------------------ |
+| `db`           | Sesión de base de datos para testing.      |
+| `client`       | Cliente HTTP de FastAPI.                   |
+| `created_user` | Usuario registrado previamente.            |
+| `logged_user`  | Usuario autenticado.                       |
+| `admin_user`   | Usuario autenticado con rol administrador. |
+| `user_payload` | Generación dinámica de datos de prueba.    |
 
-Testing:
-
-```python
-app.dependency_overrides[get_db] = override_get_db
-```
-
-Gracias a esto:
-
-```text
-Endpoints
-↓
-users_test
-```
-
-en lugar de:
-
-```text
-Endpoints
-↓
-users
-```
+Este enfoque permite mantener los tests pequeños, independientes y fáciles de mantener.
 
 ---
 
-## Fixture db
+## Tipos de Pruebas
 
-### Implementación
+Actualmente el laboratorio incorpora distintos niveles de pruebas automatizadas.
 
-```python
-@pytest.fixture
-def db():
-    connection = test_engine.connect()
+| Tipo        | Objetivo                                                                       |
+| ----------- | ------------------------------------------------------------------------------ |
+| Unitarias   | Validar funciones o comportamientos individuales.                              |
+| Funcionales | Verificar el comportamiento de un endpoint específico.                         |
+| Integración | Validar el funcionamiento conjunto de varios componentes.                      |
+| End-to-End  | Comprobar flujos completos desde la petición inicial hasta el resultado final. |
 
-    transaction = connection.begin()
-
-    db = TestingSessionLocal(bind=connection)
-
-    yield db
-
-    db.close()
-
-    transaction.rollback()
-
-    connection.close()
-```
+La combinación de estos niveles permite aumentar la confianza en el comportamiento de la aplicación sin depender exclusivamente de un único tipo de prueba.
 
 ---
 
-## Flujo de Ejecución
+## Mocking
 
-### Inicio
+El proyecto utiliza Mock para sustituir dependencias externas cuya ejecución real no resulta necesaria durante las pruebas.
 
-Se abre una conexión:
+Actualmente esta técnica se aplica principalmente sobre el servicio de envío de correos electrónicos.
 
-```python
-connection = test_engine.connect()
-```
+### Beneficios
 
----
-
-### Transacción
-
-Se crea una transacción:
-
-```python
-transaction = connection.begin()
-```
-
-Todas las operaciones del test ocurren dentro de ella.
+* Evita depender de servicios externos.
+* Reduce el tiempo de ejecución de la suite.
+* Permite verificar llamadas y parámetros.
+* Facilita el aislamiento de la lógica bajo prueba.
 
 ---
 
-### Sesión
+## Spy
 
-La sesión se vincula explícitamente a la conexión:
+Los Spy permiten ejecutar el comportamiento real de una función mientras registran las llamadas realizadas durante la prueba.
 
-```python
-db = TestingSessionLocal(bind=connection)
-```
-
-Esto obliga a que todos los commits realizados por los endpoints queden contenidos dentro de la misma transacción.
+Se utilizan cuando resulta necesario comprobar la interacción entre componentes sin modificar su comportamiento.
 
 ---
 
-### Finalización
+## Stub
 
-Al terminar el test:
+Los Stub sustituyen implementaciones reales por respuestas controladas.
 
-```python
-transaction.rollback()
-```
-
-revierte todos los cambios realizados.
+Se utilizan para simplificar escenarios específicos y garantizar resultados deterministas durante las pruebas.
 
 ---
 
-## ¿Por qué funciona?
+## Monkeypatch
 
-Aunque un endpoint ejecute:
+Monkeypatch permite modificar temporalmente atributos, funciones o variables durante la ejecución de un test.
 
-```python
-db.commit()
-```
+En este proyecto se utiliza para sustituir dependencias de forma controlada sin modificar permanentemente la implementación original.
 
-la sesión está asociada a una transacción externa.
-
-Por tanto:
-
-```text
-commit
-≠ persistencia definitiva
-```
-
-Todo permanece dentro de la transacción abierta por el fixture.
-
-Al ejecutar:
-
-```python
-transaction.rollback()
-```
-
-los cambios desaparecen.
+Su principal ventaja es permitir simular distintos escenarios manteniendo completamente aislado el código de producción.
 
 ---
 
-## Aislamiento entre Tests
+## Cobertura de Código
 
-Cada test recibe:
+El proyecto utiliza Coverage.py para medir el porcentaje de código ejecutado por la suite de pruebas.
 
-```text
-Nueva conexión
-Nueva transacción
-Nueva sesión
-```
+La cobertura no se utiliza únicamente como una métrica cuantitativa.
 
-por lo que:
+También sirve para:
 
-```text
-Test A
-```
+* Detectar código muerto.
+* Identificar rutas no ejercitadas.
+* Descubrir casos de prueba faltantes.
+* Guiar refactorizaciones.
 
-no afecta a:
-
-```text
-Test B
-```
+Durante el Sprint 4 la revisión de cobertura permitió eliminar ramas de código que nunca podían ejecutarse, simplificando la implementación de varios endpoints.
 
 ---
 
-## Fixture client
+## Reportes HTML
 
-### Implementación
+La suite genera reportes HTML para facilitar el análisis de la ejecución de las pruebas.
 
-```python
-@pytest.fixture
-def client(db):
+Estos reportes incluyen:
 
-    def override_get_db():
-        yield db
+* Resultado individual de cada test.
+* Tiempo de ejecución.
+* Resumen general de la suite.
+* Estado de éxito o fallo.
 
-    app.dependency_overrides[get_db] = override_get_db
-
-    with TestClient(app) as client:
-        yield client
-
-    app.dependency_overrides.clear()
-```
-
----
-
-## Objetivo
-
-Forzar que los endpoints utilicen la sesión creada por el fixture:
-
-```python
-db
-```
-
-en lugar de crear una nueva.
-
-Esto permite que:
-
-```text
-Pytest
-↓
-FastAPI
-↓
-SQLAlchemy
-```
-
-compartan exactamente la misma transacción.
-
----
-
-## ¿Por qué no crear una nueva sesión?
-
-Esto sería incorrecto:
-
-```python
-def override_get_db():
-    db = TestingSessionLocal()
-    yield db
-```
-
-porque:
-
-```text
-Nueva sesión
-↓
-Nueva conexión
-↓
-Nueva transacción
-```
-
-El rollback del fixture principal no podría revertir esos cambios.
-
----
-
-## Fixture Factory
-
-Algunos fixtures generan datos dinámicamente.
-
-Ejemplo:
-
-```python
-@pytest.fixture
-def user_payload():
-    def _user_payload(
-        name="Pepe",
-        age=49
-    ):
-        ...
-    return _user_payload
-```
-
-Uso:
-
-```python
-payload = user_payload(
-    name="Alex",
-    age=25
-)
-```
-
----
-
-## Fixture de Entidad Creada
-
-Ejemplo:
-
-```python
-@pytest.fixture
-def created_user(client, valid_user_payload):
-    response = client.post(
-        "/users",
-        json=valid_user_payload
-    )
-
-    assert response.status_code == 201
-
-    return response.json()
-```
-
-Permite reutilizar usuarios ya creados.
-
-## Fixture de Actualización Parcial
-
-Ejemplo:
-
-```python
-@pytest.fixture
-def patch_user(client):
-    # El '*' obliga que todo lo que está a la derecha se pase con nombre
-    def _patch_user(id, *, name = False, email = False, age = False, headers = ""):
-        patch_payload = {}
-        if name:
-            patch_payload["name"] = "Diego Armando"
-        if email:
-            patch_payload["email"] = f"{uuid.uuid4()}@yahoo.com"
-        if age:
-            patch_payload["age"] = 36
-        
-        return client.patch(f"/users/{id}", json=patch_payload, headers=headers)
-    
-    return _patch_user # <-- Importante no olvidar esta línea
-```
-
-Permite actualizar parcialmente a un usuario, el payload que se genera permite que se envíen 1 o todos los campos.
-
-## Fixture loged_user
-
-Algunos tests requieren un usuario autenticado
-
-```python
-@pytest.fixture
-def loged_user(client, valid_user_payload):
-    created_response = client.post("/users", json=valid_user_payload)
-    created_body = created_response.json()
-
-    payload = {
-        "username": valid_user_payload["email"],
-        "password": valid_user_payload["password"]
-    }
-    login_response = client.post("/users/login", data=payload)
-    login_body = login_response.json()
-
-    assert created_response.status_code == 201
-    assert login_response.status_code == 200
-
-    created_body["token"] = login_body["access_token"]
-
-    return created_body
-```
-
-Permite reutilizar usuarios autenticados en los tests de endpoints protegidos.
-
----
-
-## Testing de JWT
-
-Los endpoints protegidos utilizan Bearer Authentication.
-
-Cabecera utilizada:
-
-```http
-Authorization: Bearer <token>
-```
-
-Ejemplo:
-
-```python
-headers = {
-    "Authorization": f"Bearer {token}"
-}
-```
-
-Los tests verifican:
-
-* Token válido
-* Token inválid
-* Ausencia de token
-* Usuario inactivo
-
----
-
-## Testing de Autorización
-
-La API diferencia entre:
-
-### Autenticación
-
-Verifica la identidad del usuario.
-
-Ejemplos:
-
-```text
-401 Unauthorized
-```
-
-* Token inválido
-* Token expirado
-* Usuario inexistente
-* Usuario inactivo
-
-### Autorización
-
-Verifica si el usuario tiene permisos para acceder al recurso.
-
-Ejemplos:
-
-```text
-403 Forbidden
-```
-
-* Usuario intenta consultar otro perfil
-* Usuario intenta modificar otro perfil
-* Usuario intenta eliminar otro perfil
-
----
-
-## Testing de Roles
-
-La aplicación utiliza Role Based Access Control (RBAC).
-
-Roles disponibles:
-
-```text
-admin
-user
-```
-
-Las prueba verifican:
-
-* Usuario normal sin acceso a recursos administrativos
-* Usuario administrador con acceso a recursos administrativos
-* Protección mediante require_admin()
-
----
-
-## Ventajas del Enfoque
-
-### Gestión del Esquema
-
-Los tests no crean ni eliminan tablas.
-
-El esquema de la base de datos de testing es gestionado exclusivamente mediante Alembic:
-
-```bash
-alembic upgrade head
-```
-
-esto garantiza que la estructura utiizada durante las pruebas sea idéntica a la utilizada en desarrollo.
-
----
-
-### Aislamiento
-
-Cada prueba comienza con:
-
-```text
-Tabla vacía
-```
-
-y termina dejando:
-
-```text
-Tabla vacía
-```
-
-mediante rollback.
-
----
-
-### Reproducibilidad
-
-El resultado de una prueba no depende de ejecuciones anteriores.
-
----
-
-### Simplicidad
-
-No es necesario ejecutar:
-
-```python
-DELETE FROM users
-```
-
-antes o después de cada prueba.
-
----
-
-## Flujo Completo
-
-```text
-Inicio test
-│
-├── Nueva conexión
-│
-├── Nueva transacción
-│
-├── Nueva sesión
-│
-├── Endpoint ejecuta commits
-│
-├── Test finaliza
-│
-├── Rollback
-│
-└── Conexión cerrada
-```
-
-Resultado:
-
-```text
-Base de datos limpia
-```
-
-para el siguiente test.
+Este tipo de reportes resulta especialmente útil durante procesos de integración continua.
 
 ---
 
 ## Buenas Prácticas
 
-### Utilizar siempre users_test
+Durante el desarrollo del laboratorio se adoptaron las siguientes prácticas:
 
-Nunca ejecutar pruebas sobre:
-
-```text
-users
-```
-
----
-
-### Compartir la misma sesión
-
-Los endpoints deben utilizar:
-
-```python
-yield db
-```
-
-desde el fixture.
+* Cada test valida un único comportamiento.
+* Los tests son independientes entre sí.
+* No existe dependencia del orden de ejecución.
+* Se utilizan fixtures para evitar duplicación.
+* Las dependencias externas se aíslan mediante Mock cuando es necesario.
+* Las pruebas de integración validan flujos completos del sistema.
+* La base de datos de desarrollo nunca es utilizada durante la ejecución de la suite.
 
 ---
 
-### Mantener rollback automático
+## Conclusiones
 
-Evita limpiezas manuales.
+La infraestructura de testing evolucionó progresivamente junto con el proyecto.
 
----
+Lo que comenzó como una pequeña colección de pruebas unitarias terminó convirtiéndose en una suite automatizada que incorpora aislamiento completo del entorno, pruebas de integración, mocking, monkeypatch, cobertura de código y generación de reportes.
 
-### Crear datos únicamente dentro del test
-
-No depender de registros preexistentes.
-
----
-
-## Lecciones Aprendidas
-
-* FastAPI permite reemplazar dependencias mediante `dependency_overrides`.
-* Una transacción externa puede contener los commits de los endpoints.
-* `rollback()` elimina todos los cambios realizados durante una prueba.
-* Cada test debe ser independiente de los demás.
-* El aislamiento mediante transacciones es más eficiente que borrar registros manualmente.
-* Compartir la misma sesión entre Pytest y FastAPI es fundamental para que el rollback funcione correctamente.
-* JWT permite autenticar usuarios mediante Access Tokens.
-* Los endpoints protegidos deben validar el token antes de ejecutar lógica de negocio.
-* La autenticación y la autorización son conceptos distintos.
-* Los códigos 401 y 403 representan errores diferentes.
-* Role Based Access Control (RBAC) permite restringir funcionalidades según el rol del usuario.
-* Los fixtures pueden utilizarse para generar usuarios autenticados reutilizables.
+Esta evolución permitió que el laboratorio no solo validara el funcionamiento de la aplicación, sino que también sirviera como un entorno para practicar técnicas de QA Automation utilizadas habitualmente en proyectos profesionales.

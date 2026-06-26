@@ -1,8 +1,23 @@
-# Docker y PostgreSQL
+> **Documento:** Docker
+> **Proyecto:** QA Automation Lab  
+> **Última actualización:** Sprint 4  
+> **Estado:** Vigente
+
+# Docker
 
 ## Objetivo
 
-Desplegar PostgreSQL en una máquina virtual Ubuntu utilizando Docker y Docker Compose, manteniendo el servicio accesible únicamente a través de una interfaz de red Host-Only.
+Este documento describe la infraestructura Docker utilizada por el proyecto y proporciona los pasos necesarios para preparar el entorno de desarrollo.
+
+Además de explicar la arquitectura utilizada, incluye la instalación, configuración y administración del contenedor PostgreSQL empleado por el laboratorio.
+
+---
+
+## ¿Por qué utilizar Docker?
+
+El proyecto utiliza Docker para desacoplar la infraestructura del sistema operativo del desarrollador y garantizar que cualquier persona pueda levantar el mismo entorno de desarrollo independientemente de su plataforma.
+
+Docker elimina diferencias de configuración entre equipos y simplifica la preparación del laboratorio, especialmente durante las primeras etapas del proyecto.
 
 ---
 
@@ -24,6 +39,30 @@ Ubuntu VM
 ```
 
 La comunicación entre Windows y Ubuntu se realiza mediante una interfaz Host-Only de VirtualBox.
+
+---
+
+## Flujo General
+
+El entorno de desarrollo sigue el siguiente flujo:
+
+```text
+Docker Compose
+      │
+      ▼
+PostgreSQL
+      │
+      ▼
+Alembic
+      │
+      ▼
+FastAPI
+      │
+      ▼
+Pytest
+```
+
+Docker proporciona únicamente la infraestructura necesaria para ejecutar el resto de componentes del laboratorio.
 
 ---
 
@@ -283,10 +322,28 @@ Salir:
 
 ---
 
-## Lecciones Aprendidas
+## Buenas Prácticas
 
-* Docker permite desplegar PostgreSQL sin instalarlo directamente en Ubuntu.
-* Docker Compose simplifica la gestión del contenedor.
-* Una interfaz Host-Only proporciona aislamiento de red adecuado para laboratorios.
-* Mantener bases de datos separadas para desarrollo y testing reduce riesgos.
-* PostgreSQL en Docker se aproxima más a un entorno real que SQLite.
+* No modificar la configuración manualmente dentro del contenedor.
+* Gestionar el esquema mediante Alembic.
+* Mantener la configuración centralizada mediante Settings.
+* Versionar docker-compose.yml.
+* No almacenar datos persistentes fuera de los volúmenes Docker.
+
+---
+
+## Evolución Futura
+
+* Contenerización completa de FastAPI.
+* Docker Compose con todos los servicios.
+* Variables mediante .env.
+* Integración con GitHub Actions.
+* Ejecución de pruebas dentro de contenedores.
+
+---
+
+## Conclusiones
+
+Docker proporciona una infraestructura reproducible y desacoplada del sistema operativo del desarrollador.
+
+La combinación de Docker, Alembic y la configuración centralizada mediante Settings permite preparar un entorno de desarrollo consistente, facilitando tanto el desarrollo diario como la ejecución de pruebas automatizadas.
