@@ -1,4 +1,4 @@
-> **Documento:** Docker
+> **Documento:** Docker y PostgreSQL 
 > **Proyecto:** QA Automation Lab  
 > **Última actualización:** Sprint 4  
 > **Estado:** Vigente
