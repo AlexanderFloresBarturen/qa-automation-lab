@@ -31,6 +31,19 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${{ secrets.DATABASE_USER }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DEVELOPMENT_DATABASE_NAME: users
+      TEST_DATABASE_NAME: users_test
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      MAX_LOGIN_ATTEMPTS: 5
+      ACCOUNT_LOCK_MINUTES: 15
+      PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: 15
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
