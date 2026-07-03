@@ -21,7 +21,7 @@ class Settings:
     TEST_DATABASE_NAME: str = os.getenv("TEST_DATABASE_NAME", "users_test")
 
     CURRENT_DATABASE: DatabaseEnvironment = DatabaseEnvironment.DEVELOPMENT
-    
+
     # endregion
 
     # region Database URLs
@@ -32,7 +32,7 @@ class Settings:
     @property
     def TEST_DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.DATABSE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.TEST_DATABASE_NAME}"
-    
+
     # endregion
 
     # region JWT
