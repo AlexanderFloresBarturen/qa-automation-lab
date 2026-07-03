@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  quality:
+  code-quality:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,3 +29,6 @@ jobs:
       
       - name: Verify installation
         run: python --version
+      
+      - name: Run Ruff
+        run: ruff check .
