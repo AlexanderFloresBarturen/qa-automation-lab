@@ -71,6 +71,9 @@ jobs:
 
       - name: Run Alembic migrations
         run: alembic upgrade head
+      
+      - name: Run tests
+        run: pytest
 
       - name: Run Ruff
         run: ruff check .
