@@ -1,6 +1,7 @@
 from tests.helpers import assert_valid_user_response, assert_forbidden_response, assert_not_authenticated_response, assert_invalid_token_response
 
-#region POSITIVOS
+
+# region POSITIVOS
 def test_get_user_success(client, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -16,9 +17,11 @@ def test_get_user_success(client, loged_user):
     assert get_body["email"] == loged_user["email"]
     assert get_body["age"] == loged_user["age"]
 
-#endregion
 
-#region NEGATIVOS
+# endregion
+
+
+# region NEGATIVOS
 def test_get_user_without_token(client, created_user):
     get_response = client.get(f"/users/{created_user['id']}")
     get_body = get_response.json()
@@ -27,6 +30,7 @@ def test_get_user_without_token(client, created_user):
 
     assert_not_authenticated_response(get_body)
 
+
 def test_get_user_invalid_token(client, created_user):
     get_response = client.get(f"/users/{created_user['id']}", headers={"Authorization": "Bearer invalid_token"})
     get_body = get_response.json()
@@ -34,6 +38,7 @@ def test_get_user_invalid_token(client, created_user):
     assert get_response.status_code == 401
 
     assert_invalid_token_response(get_body)
+
 
 def test_get_another_user(client, user_payload, loged_user):
     user_two = user_payload()
@@ -51,6 +56,7 @@ def test_get_another_user(client, user_payload, loged_user):
 
     assert_forbidden_response(get_body)
 
+
 def test_get_nonexisting_user(client, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -61,4 +67,5 @@ def test_get_nonexisting_user(client, loged_user):
 
     assert_forbidden_response(get_body)
 
-#endregion
+
+# endregion

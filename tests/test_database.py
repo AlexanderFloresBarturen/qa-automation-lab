@@ -1,13 +1,12 @@
 from app.models.user_model import UserModel
 from app.security.password import verify_password
 
+
 def test_create_user_saves_correct_data_in_database(client, db, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
     body = response.json()
 
-    user = db.query(UserModel).filter(
-        UserModel.id == body["id"]
-    ).first()
+    user = db.query(UserModel).filter(UserModel.id == body["id"]).first()
 
     assert response.status_code == 201
 
@@ -22,6 +21,7 @@ def test_create_user_saves_correct_data_in_database(client, db, valid_user_paylo
     assert valid_user_payload["password"] != user.password_hash
     assert verify_password(valid_user_payload["password"], user.password_hash)
 
+
 def test_update_user_saves_correct_data_in_database(client, db, loged_user, valid_update_payload):
     quantity_before = db.query(UserModel).count()
 
@@ -31,9 +31,7 @@ def test_update_user_saves_correct_data_in_database(client, db, loged_user, vali
 
     quantity_after = db.query(UserModel).count()
 
-    user_updated = db.query(UserModel).filter(
-        UserModel.id == loged_user["id"]
-    ).first()
+    user_updated = db.query(UserModel).filter(UserModel.id == loged_user["id"]).first()
 
     assert response.status_code == 200
 
@@ -47,14 +45,13 @@ def test_update_user_saves_correct_data_in_database(client, db, loged_user, vali
     assert user_updated.age == valid_update_payload["age"]
     assert user_updated.is_active is True
 
+
 def test_delete_user_change_state_in_database(client, db, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
     response = client.delete(f"/users/{loged_user['id']}", headers=headers)
 
-    user_deleted = db.query(UserModel).filter(
-        UserModel.id == loged_user["id"]
-    ).first()
+    user_deleted = db.query(UserModel).filter(UserModel.id == loged_user["id"]).first()
 
     assert response.status_code == 204
 
@@ -66,19 +63,18 @@ def test_delete_user_change_state_in_database(client, db, loged_user):
     assert user_deleted.age == loged_user["age"]
     assert user_deleted.is_active is False
 
+
 def test_patch_user_updates_database(db, loged_user, patch_user):
     quantity_before = db.query(UserModel).count()
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    response = patch_user(id=loged_user["id"], name = True, headers=headers)
+    response = patch_user(id=loged_user["id"], name=True, headers=headers)
     body = response.json()
 
     quantity_after = db.query(UserModel).count()
 
-    user_updated = db.query(UserModel).filter(
-        UserModel.id == loged_user["id"]
-    ).first()
+    user_updated = db.query(UserModel).filter(UserModel.id == loged_user["id"]).first()
 
     assert response.status_code == 200
 

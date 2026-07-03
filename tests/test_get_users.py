@@ -18,6 +18,7 @@ def test_get_users_success(client, admin_user, user_payload):
 
     assert len(list_body) == 3
 
+
 def test_get_users_forbidden(client, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -27,12 +28,13 @@ def test_get_users_forbidden(client, loged_user):
     assert list_response.status_code == 403
 
     assert len(list_body) == 1
-    
+
     assert "detail" in list_body
 
     assert isinstance(list_body["detail"], str)
 
     assert list_body["detail"] == "Admin access required"
+
 
 def test_get_users_without_token(client):
     list_response = client.get("/users", headers={})
@@ -41,12 +43,13 @@ def test_get_users_without_token(client):
     assert list_response.status_code == 401
 
     assert len(list_body) == 1
-    
+
     assert "detail" in list_body
 
     assert isinstance(list_body["detail"], str)
 
     assert list_body["detail"] == "Not authenticated"
+
 
 def test_get_users_invalid_token(client):
     headers = {}
@@ -57,7 +60,7 @@ def test_get_users_invalid_token(client):
     assert list_response.status_code == 401
 
     assert len(list_body) == 1
-    
+
     assert "detail" in list_body
 
     assert isinstance(list_body["detail"], str)

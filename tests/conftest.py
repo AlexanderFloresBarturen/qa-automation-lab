@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient   # Permite probars APIs sin levantar Uvicorn.
+from fastapi.testclient import TestClient  # Permite probars APIs sin levantar Uvicorn.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from alembic import command
@@ -13,7 +13,8 @@ from tests.database import ensure_test_database_exists
 import pytest
 import uuid
 
-#region Configuración de DB de testing
+# region Configuración de DB de testing
+
 
 # Hook de inicio
 def pytest_sessionstart(session):
@@ -27,7 +28,8 @@ def pytest_sessionstart(session):
 
     command.upgrade(alembic_cfg, "head")
 
-    print (f"Running test against: {settings.CURRENT_DATABASE.value} database")
+    print(f"Running test against: {settings.CURRENT_DATABASE.value} database")
+
 
 # Hook de finalización
 def pytest_sessionfinish(session, exitstatus):
@@ -35,17 +37,15 @@ def pytest_sessionfinish(session, exitstatus):
 
     assert settings.CURRENT_DATABASE == DatabaseEnvironment.DEVELOPMENT
 
-    print (f"Restoring to: {settings.CURRENT_DATABASE.value} database")
+    print(f"Restoring to: {settings.CURRENT_DATABASE.value} database")
+
 
 # Crea conexión PostgreSQL para testing
 test_engine = create_engine(settings.TEST_DATABASE_URL)
 
 # Crea sesiones para consultas
-TestingSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=test_engine
-)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
 
 @pytest.fixture
 def db():
@@ -72,63 +72,50 @@ def db():
     # Cierra la conexión
     connection.close()
 
+
 @pytest.fixture
 def client(db):
     def override_get_db():
         yield db
-    
+
     app.dependency_overrides[get_db] = override_get_db
 
     with TestClient(app) as client:
         yield client
-    
-    app.dependency_overrides.clear()    # Evita que el override quede activo para otros contextos
 
-#endregion
+    app.dependency_overrides.clear()  # Evita que el override quede activo para otros contextos
+
+
+# endregion
 
 """
 Fixture sirve para preparar el entorno y los datos necesarios antes de ejecutar una prueba y limpiarlos después.
 Permite evitar código repetitivo y estructurar los tests de forma modular
 """
 
+
 @pytest.fixture
 def valid_user_payload():
-    return{
-        "name": "Alex",
-        "email": f"{uuid.uuid4()}@gmail.com",
-        "age": 25,
-        "password": "Password123!"
-    }
+    return {"name": "Alex", "email": f"{uuid.uuid4()}@gmail.com", "age": 25, "password": "Password123!"}
+
 
 @pytest.fixture
 def valid_update_payload():
-    return{
-        "name": "Pepe",
-        "email": f"{uuid.uuid4()}@hotmail.com",
-        "age": 42,
-        "password": "Password123!"
-    }
+    return {"name": "Pepe", "email": f"{uuid.uuid4()}@hotmail.com", "age": 42, "password": "Password123!"}
+
 
 @pytest.fixture
 def user_payload():
-    def _user_payload(
-            name="Pepe",
-            age=49,
-            password="Password123!"
-    ):
-        return {
-            "name": name,
-            "email": f"{uuid.uuid4()}@gmail.com",
-            "age": age,
-            "password": password
-        }
-    
+    def _user_payload(name="Pepe", age=49, password="Password123!"):
+        return {"name": name, "email": f"{uuid.uuid4()}@gmail.com", "age": age, "password": password}
+
     return _user_payload
+
 
 @pytest.fixture
 def patch_user(client):
     # El '*' obliga que todo lo que está a la derecha se pase con nombre
-    def _patch_user(id, *, name = False, email = False, age = False, headers = ""):
+    def _patch_user(id, *, name=False, email=False, age=False, headers=""):
         patch_payload = {}
         if name:
             patch_payload["name"] = "Diego Armando"
@@ -136,10 +123,11 @@ def patch_user(client):
             patch_payload["email"] = f"{uuid.uuid4()}@yahoo.com"
         if age:
             patch_payload["age"] = 36
-        
+
         return client.patch(f"/users/{id}", json=patch_payload, headers=headers)
-    
-    return _patch_user # <-- Importante no olvidar esta línea
+
+    return _patch_user  # <-- Importante no olvidar esta línea
+
 
 @pytest.fixture
 def created_user(client, valid_user_payload):
@@ -149,15 +137,13 @@ def created_user(client, valid_user_payload):
 
     return response.json()
 
+
 @pytest.fixture
 def loged_user(client, valid_user_payload):
     created_response = client.post("/users", json=valid_user_payload)
     created_body = created_response.json()
 
-    payload = {
-        "username": valid_user_payload["email"],
-        "password": valid_user_payload["password"]
-    }
+    payload = {"username": valid_user_payload["email"], "password": valid_user_payload["password"]}
     login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 
@@ -168,21 +154,20 @@ def loged_user(client, valid_user_payload):
 
     return created_body
 
+
 @pytest.fixture
 def get_token(client):
     def _get_token(*, username="", password=""):
-        payload = {
-            "username": username,
-            "password": password
-        }
+        payload = {"username": username, "password": password}
         login_response = client.post("/users/login", data=payload)
         login_body = login_response.json()
 
         assert login_response.status_code == 200
 
         return login_body["access_token"]
-    
+
     return _get_token
+
 
 @pytest.fixture
 def user_reset_password_payload(client, created_user):
@@ -192,30 +177,23 @@ def user_reset_password_payload(client, created_user):
 
         assert fp_response.status_code == 200
 
-        return {
-            "token": fp_body["token"],
-            "new_password": password
-        }
-    
+        return {"token": fp_body["token"], "new_password": password}
+
     return _user_reset_password_payload
+
 
 @pytest.fixture
 def admin_user(db, client, valid_user_payload):
     created_response = client.post("/users", json=valid_user_payload)
     created_body = created_response.json()
 
-    user = db.query(UserModel).filter(
-        UserModel.id == created_body["id"]
-    ).first()
+    user = db.query(UserModel).filter(UserModel.id == created_body["id"]).first()
 
     user.role_id = 1
 
     db.commit()
 
-    payload = {
-        "username": valid_user_payload["email"],
-        "password": valid_user_payload["password"]
-    }
+    payload = {"username": valid_user_payload["email"], "password": valid_user_payload["password"]}
     login_response = client.post("/users/login", data=payload)
     login_body = login_response.json()
 

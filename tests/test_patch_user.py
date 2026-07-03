@@ -2,7 +2,8 @@ import pytest
 
 from tests.helpers import assert_valid_user_response, assert_duplicate_email_response, assert_forbidden_response, assert_invalid_token_response, assert_not_authenticated_response
 
-#region POSITIVOS
+
+# region POSITIVOS
 def test_patch_user_name_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -17,6 +18,7 @@ def test_patch_user_name_success(loged_user, patch_user):
     assert loged_user["name"] != body_patch["name"]
     assert loged_user["email"] == body_patch["email"]
     assert loged_user["age"] == body_patch["age"]
+
 
 def test_patch_user_email_success(loged_user, patch_user):
     headers = {}
@@ -33,6 +35,7 @@ def test_patch_user_email_success(loged_user, patch_user):
     assert loged_user["email"] != body_patch["email"]
     assert loged_user["age"] == body_patch["age"]
 
+
 def test_patch_user_age_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -47,6 +50,7 @@ def test_patch_user_age_success(loged_user, patch_user):
     assert loged_user["name"] == body_patch["name"]
     assert loged_user["email"] == body_patch["email"]
     assert loged_user["age"] != body_patch["age"]
+
 
 def test_patch_user_name_email_success(loged_user, patch_user):
     headers = {}
@@ -63,6 +67,7 @@ def test_patch_user_name_email_success(loged_user, patch_user):
     assert loged_user["email"] != body_patch["email"]
     assert loged_user["age"] == body_patch["age"]
 
+
 def test_patch_user_name_age_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -77,6 +82,7 @@ def test_patch_user_name_age_success(loged_user, patch_user):
     assert loged_user["name"] != body_patch["name"]
     assert loged_user["email"] == body_patch["email"]
     assert loged_user["age"] != body_patch["age"]
+
 
 def test_patch_user_email_age_success(loged_user, patch_user):
     headers = {}
@@ -93,6 +99,7 @@ def test_patch_user_email_age_success(loged_user, patch_user):
     assert loged_user["email"] != body_patch["email"]
     assert loged_user["age"] != body_patch["age"]
 
+
 def test_patch_user_full_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -108,13 +115,14 @@ def test_patch_user_full_success(loged_user, patch_user):
     assert loged_user["email"] != body_patch["email"]
     assert loged_user["age"] != body_patch["age"]
 
+
 def test_patch_reuse_email(client, user_payload, get_token):
     user_one = user_payload()
     user_two = user_payload()
 
     post_response_first = client.post("/users", json=user_one)
     body_post_first = post_response_first.json()
-    
+
     post_response_second = client.post("/users", json=user_two)
     body_post_second = post_response_second.json()
 
@@ -143,18 +151,21 @@ def test_patch_reuse_email(client, user_payload, get_token):
 
     assert body_patch["email"] == body_post_first["email"]
 
-#endregion
 
-#region NEGATIVOS
+# endregion
+
+
+# region NEGATIVOS
 def test_patch_user_not_found(patch_user, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=9999, name = True, headers=headers)
+    patch_response = patch_user(id=9999, name=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 403
 
     assert_forbidden_response(body_patch)
+
 
 def test_patch_deleted_user(client, loged_user, patch_user):
     headers = {}
@@ -169,9 +180,10 @@ def test_patch_deleted_user(client, loged_user, patch_user):
 
     assert_invalid_token_response(body_patch)
 
+
 def test_patch_user_duplicate_email(client, user_payload, loged_user):
     user_two = user_payload()
-    
+
     post_response_two = client.post("/users", json=user_two)
     body_post_second = post_response_two.json()
 
@@ -185,6 +197,7 @@ def test_patch_user_duplicate_email(client, user_payload, loged_user):
     assert patch_response.status_code == 409
 
     assert_duplicate_email_response(body_patch)
+
 
 def test_patch_empty_payload(client, loged_user):
     headers = {}
@@ -201,6 +214,7 @@ def test_patch_empty_payload(client, loged_user):
     assert body_patch["detail"][0]["type"] == "value_error"
     assert body_patch["detail"][0]["msg"] == "Value error, At least one field is required"
 
+
 def test_patch_user_without_token(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -211,6 +225,7 @@ def test_patch_user_without_token(loged_user, patch_user):
 
     assert_not_authenticated_response(patch_body)
 
+
 def test_patch_user_invalid_token(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -220,6 +235,7 @@ def test_patch_user_invalid_token(loged_user, patch_user):
     assert patch_response.status_code == 401
 
     assert_invalid_token_response(patch_body)
+
 
 def test_patch_another_user(client, user_payload, loged_user, patch_user):
     user_two = user_payload()
@@ -237,9 +253,10 @@ def test_patch_another_user(client, user_payload, loged_user, patch_user):
 
     assert_forbidden_response(patch_body)
 
-#endregion
 
-#region Parametrización
+# endregion
+
+# region Parametrización
 """
 Parametrización sirve para ejecutar un mismo test varias veces
 con distintos conjuntos de datos, en este caso:
@@ -247,13 +264,11 @@ con distintos conjuntos de datos, en este caso:
 - test_patch_invalid_email
 - test_patch_invalid_age
 """
+
+
 @pytest.mark.parametrize(
     "payload, error_type, error_loc",
-    [
-        ({"name": "A"}, "string_too_short", ["body", "name"]),
-        ({"email": "correo"}, "value_error", ["body", "email"]),
-        ({"age": 5}, "greater_than_equal", ["body", "age"])
-    ]
+    [({"name": "A"}, "string_too_short", ["body", "name"]), ({"email": "correo"}, "value_error", ["body", "email"]), ({"age": 5}, "greater_than_equal", ["body", "age"])],
 )
 def test_patch_invalid_fields(client, loged_user, payload, error_type, error_loc):
     headers = {}
@@ -261,7 +276,7 @@ def test_patch_invalid_fields(client, loged_user, payload, error_type, error_loc
     patch_response = client.patch(f"/users/{loged_user['id']}", headers=headers, json=payload)
     body_patch = patch_response.json()
 
-    assert patch_response. status_code == 422
+    assert patch_response.status_code == 422
 
     assert "detail" in body_patch
     assert "type" in body_patch["detail"][0]
@@ -270,13 +285,9 @@ def test_patch_invalid_fields(client, loged_user, payload, error_type, error_loc
     assert body_patch["detail"][0]["type"] == error_type
     assert body_patch["detail"][0]["loc"] == error_loc
 
+
 @pytest.mark.parametrize(
-    "payload, msg",
-    [
-        ({"name": None}, "Value error, Field name cannot be null"),
-        ({"email": None}, "Value error, Field email cannot be null"),
-        ({"age": None}, "Value error, Field age cannot be null")
-    ]
+    "payload, msg", [({"name": None}, "Value error, Field name cannot be null"), ({"email": None}, "Value error, Field email cannot be null"), ({"age": None}, "Value error, Field age cannot be null")]
 )
 def test_patch_null_fields(client, loged_user, payload, msg):
     headers = {}
@@ -293,4 +304,5 @@ def test_patch_null_fields(client, loged_user, payload, msg):
     assert body_patch["detail"][0]["type"] == "value_error"
     assert body_patch["detail"][0]["msg"] == msg
 
-#endregion
+
+# endregion

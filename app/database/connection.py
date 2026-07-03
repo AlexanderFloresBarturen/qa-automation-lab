@@ -7,12 +7,7 @@ from app.core.settings import settings
 engine = create_engine(settings.DATABASE_URL)
 
 # Crea sesiones para consultas
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Define una clase base para modelos
 Base = declarative_base()
-

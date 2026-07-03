@@ -37,7 +37,7 @@ El objetivo final del Sprint 5 es construir el siguiente flujo de trabajo:
 Editar Código
       │
       ▼
-Ruff (Lint)
+Ruff (Lint/Análisis estático)
       │
       ▼
 Black (Formato)
@@ -107,7 +107,7 @@ Realizar análisis estático del código para detectar errores comunes antes de 
 
 #### Comando
 
-```python
+```bash
 ruff check .
 ```
 
@@ -149,7 +149,7 @@ La incorporación de Ruff permitió establecer varias prácticas que se mantendr
 * Adaptar la configuración de la herramienta a las necesidades del proyecto, en lugar de mofidificar el código únicamente para eliminar advertencias.
 * Comprender cada regla antes de habilitarla o deshabilitarla.
 
-#### Configuración Actual
+#### Configuración
 
 ```toml
 # Configuración general
@@ -168,9 +168,42 @@ select = ["E", "F"]  # Activa las reglas E (estilo) y F (Pyflakes)
 
 ### Black
 
-**Estado:** Pendiente
+**Estado:** ✅ Implementado
 
-Se incorporará como formateador oficial del proyecto
+#### Objetivo
+
+Mantener un estilo de código uniforme en todo el proyecto mediante un formateador automático, eliminando diferencias de formato entre desarrolladores y reduciendo el ruido durante las revisiones de código.
+
+#### Comando
+
+```bash
+# Muestra los problemas de formato
+black --check .
+
+# Corrije los errores
+black .
+```
+
+#### Decisiones adoptadas
+
+* Configuración centralizada mediante `pyproject.toml`.
+* Misma longitud máxima de línea utilizada por Ruff (`200` caracteres) para evitar conflictos entre herramientas.
+* Uso de Python 3.12 como versión objetivo (`target-version = ["py312"]`).
+* Aplicación del formato sobre todo el repositorio antes de continuar con el resto del pipeline de calidad.
+
+#### Configuración
+
+```toml
+[tool.black]
+line-length = 200
+target-version = ["py312"]  # Indica que el proyecto se ejecuta sobre Python 3.12.x"
+```
+
+#### Observaciones
+
+Black modifica únicamente el formato del código fuente. No detecta errores, no reorganiza imports y no realiza comprobaciones de tipos.
+
+Los avisos mostrados posteriormente por Pylance pertenecen al análisis de tipos y serán tratados durante la integración de MyPy.
 
 ---
 

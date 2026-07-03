@@ -1,3 +1,4 @@
+# Ruff
 # Configuración general
 [tool.ruff]
 line-length = 200  # Verifica que el largo de la línea no sea mayor a 200 caracteres
@@ -8,3 +9,8 @@ select = ["E", "F"]  # Activa las reglas E (estilo) y F (Pyflakes)
 
 [tool.ruff.lint.per-file-ignores]
 "alembic/env.py" = ["E402", "F401"]  # En el archivo env.py ignora únicamente las reglas E402 y F401
+
+# Black
+[tool.black]
+line-length = 200
+target-version = ["py312"]  # Indica que el proyecto se ejecuta sobre Python 3.12.x"

@@ -2,11 +2,12 @@ import pytest
 
 from tests.helpers import assert_valid_user_response
 
-#region POSITIVOS
+
+# region POSITIVOS
 def test_create_user_success(client, valid_user_payload):
     response = client.post("/users", json=valid_user_payload)
     body = response.json()
-    
+
     assert response.status_code == 201
 
     assert_valid_user_response(body)
@@ -15,15 +16,17 @@ def test_create_user_success(client, valid_user_payload):
     assert body["email"] == valid_user_payload["email"]
     assert body["age"] == valid_user_payload["age"]
 
-#endregion
 
-#region NEGATIVOS
+# endregion
+
+
+# region NEGATIVOS
 def test_create_user_duplicate_email(client, user_payload):
     user_first = user_payload()
     user_second = user_payload()
 
     response_first = client.post("/users", json=user_first)
-    
+
     user_second["email"] = user_first["email"]
     response_second = client.post("/users", json=user_second)
     body_second = response_second.json()
@@ -34,6 +37,7 @@ def test_create_user_duplicate_email(client, user_payload):
     assert "detail" in body_second
 
     assert body_second["detail"] == "Email already exists"
+
 
 def test_create_user_name_too_short(client, valid_user_payload):
     payload = valid_user_payload.copy()
@@ -49,11 +53,9 @@ def test_create_user_name_too_short(client, valid_user_payload):
     assert "loc" in body["detail"][0]
     assert body["detail"][0]["loc"] == ["body", "name"]
 
+
 def test_create_user_missing_age(client):
-    payload = {
-        "name": "Alex",
-        "email": "alex@gmail.com"
-    }
+    payload = {"name": "Alex", "email": "alex@gmail.com"}
 
     response = client.post("/users", json=payload)
     body = response.json()
@@ -64,6 +66,7 @@ def test_create_user_missing_age(client):
     assert body["detail"][0]["type"] == "missing"
     assert "loc" in body["detail"][0]
     assert body["detail"][0]["loc"] == ["body", "age"]
+
 
 def test_create_user_empty_payload(client):
     payload = {}
@@ -86,15 +89,16 @@ def test_create_user_empty_payload(client):
     assert body["detail"][1]["loc"] == ["body", "email"]
     assert body["detail"][2]["loc"] == ["body", "age"]
 
+
 @pytest.mark.parametrize(
-        "password, type, error_message",
-        [
-            ("password123!", "value_error", "The password must contain at least one uppercase letter"),
-            ("PASSWORD123!", "value_error", "The password must contain at least one lowercase letter"),
-            ("Password!!!", "value_error", "The password must contain at least one number"),
-            ("Password123", "value_error", "The password must contain at least one special character"),
-            ("Pass1!", "string_too_short", "String should have at least 8 characters")
-        ]
+    "password, type, error_message",
+    [
+        ("password123!", "value_error", "The password must contain at least one uppercase letter"),
+        ("PASSWORD123!", "value_error", "The password must contain at least one lowercase letter"),
+        ("Password!!!", "value_error", "The password must contain at least one number"),
+        ("Password123", "value_error", "The password must contain at least one special character"),
+        ("Pass1!", "string_too_short", "String should have at least 8 characters"),
+    ],
 )
 def test_create_user_invalid_password(client, user_payload, password, type, error_message):
     payload = user_payload(password=password)
@@ -112,4 +116,5 @@ def test_create_user_invalid_password(client, user_payload, password, type, erro
     assert body["detail"][0]["type"] == type
     assert error_message in body["detail"][0]["msg"]
 
-#endregion
+
+# endregion

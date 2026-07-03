@@ -10,11 +10,8 @@ def test_password_recovery_end_to_end(client, valid_user_payload):
     fp_body = fp_response.json()
 
     new_password = "NewPassword123!"
-    rp_payload = {
-        "token": fp_body["token"],
-        "new_password": new_password
-    }
-    rp_response = client.post("/users/reset-password", json= rp_payload)
+    rp_payload = {"token": fp_body["token"], "new_password": new_password}
+    rp_response = client.post("/users/reset-password", json=rp_payload)
 
     login_payload_old_pwd = {}
     login_payload_old_pwd["username"] = valid_user_payload["email"]

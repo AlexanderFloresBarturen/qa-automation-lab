@@ -1,6 +1,7 @@
 from tests.helpers import assert_valid_user_response, assert_duplicate_email_response, assert_forbidden_response, assert_not_authenticated_response, assert_invalid_token_response
 
-#region POSITIVOS
+
+# region POSITIVOS
 def test_update_user_success(client, loged_user, valid_update_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -26,9 +27,11 @@ def test_update_user_success(client, loged_user, valid_update_payload):
     assert body_get["email"] == valid_update_payload["email"]
     assert body_get["age"] == valid_update_payload["age"]
 
-#endregion
 
-#region NEGATIVOS
+# endregion
+
+
+# region NEGATIVOS
 def test_update_user_not_found(client, loged_user, valid_update_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -38,6 +41,7 @@ def test_update_user_not_found(client, loged_user, valid_update_payload):
     assert response.status_code == 403
 
     assert_forbidden_response(body)
+
 
 def test_update_user_duplicate_email(client, user_payload, loged_user, valid_update_payload):
     user_two = user_payload()
@@ -55,6 +59,7 @@ def test_update_user_duplicate_email(client, user_payload, loged_user, valid_upd
 
     assert_duplicate_email_response(body_put)
 
+
 def test_update_deleted_user(client, loged_user, valid_update_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -67,13 +72,15 @@ def test_update_deleted_user(client, loged_user, valid_update_payload):
 
     assert_invalid_token_response(body_update)
 
+
 def test_update_user_without_token(client, created_user, valid_update_payload):
-    update_response = client.put(f"/users/{created_user['id']}", json= valid_update_payload)
+    update_response = client.put(f"/users/{created_user['id']}", json=valid_update_payload)
     update_body = update_response.json()
 
     assert update_response.status_code == 401
 
     assert_not_authenticated_response(update_body)
+
 
 def test_update_user_invalid_token(client, created_user, valid_update_payload):
     update_response = client.put(f"/users/{created_user['id']}", headers={"Authorization": "Bearer invalid_token"}, json=valid_update_payload)
@@ -82,6 +89,7 @@ def test_update_user_invalid_token(client, created_user, valid_update_payload):
     assert update_response.status_code == 401
 
     assert_invalid_token_response(update_body)
+
 
 def test_update_another_user(client, user_payload, loged_user, valid_update_payload):
     user_two = user_payload()
@@ -98,5 +106,6 @@ def test_update_another_user(client, user_payload, loged_user, valid_update_payl
     assert update_response.status_code == 403
 
     assert_forbidden_response(update_body)
-    
-#endregion
+
+
+# endregion

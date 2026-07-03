@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from app.database.connection import Base
 
+
 # Define la tabla users
 class UserModel(Base):
     __tablename__ = "users"
@@ -14,7 +15,7 @@ class UserModel(Base):
     email = Column(String, nullable=False)
 
     age = Column(Integer, nullable=False)
-    
+
     is_active = Column(Boolean, nullable=False, default=True)
 
     password_hash = Column(String, nullable=False)

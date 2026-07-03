@@ -188,6 +188,7 @@ services:
   postgres:
     image: postgres:17
     container_name: postgres-lab
+    restart: unless-stopped
 
     environment:
       POSTGRES_USER: postgres

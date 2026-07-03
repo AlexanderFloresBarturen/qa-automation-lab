@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from app.database.connection import Base
 
+
 class PasswordResetTokenModel(Base):
     __tablename__ = "password_reset_tokens"
 
