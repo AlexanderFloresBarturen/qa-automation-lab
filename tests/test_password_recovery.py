@@ -55,8 +55,7 @@ def test_forgot_password_nonexisting_email(db, client):
 
 def test_forgot_password_invalidates_previous_token(db, client, created_user):
     for _ in range(3):
-        fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
-        fp_body = fp_response.json()
+        client.post("/users/forgot-password", json={"email": created_user["email"]})
     
     tokens = db.query(PasswordResetTokenModel).filter(
         PasswordResetTokenModel.user_id == created_user["id"]
@@ -287,7 +286,6 @@ def test_reset_password_unlocks_account(db, client, valid_user_payload):
         "new_password": "NewPassword123!"
     }
     rp_response = client.post("/users/reset-password", json= rp_payload)
-    rp_body = rp_response.json()
 
     user = db.query(UserModel).filter(
         UserModel.email == valid_user_payload["email"]

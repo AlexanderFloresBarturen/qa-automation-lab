@@ -42,7 +42,7 @@ def test_update_user_not_found(client, loged_user, valid_update_payload):
 def test_update_user_duplicate_email(client, user_payload, loged_user, valid_update_payload):
     user_two = user_payload()
 
-    post_response_two = client.post("/users", json=user_two)
+    client.post("/users", json=user_two)
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -58,7 +58,7 @@ def test_update_user_duplicate_email(client, user_payload, loged_user, valid_upd
 def test_update_deleted_user(client, loged_user, valid_update_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    delete_response = client.delete(f"/users/{loged_user['id']}", headers=headers)
+    client.delete(f"/users/{loged_user['id']}", headers=headers)
 
     update_response = client.put(f"/users/{loged_user['id']}", headers=headers, json=valid_update_payload)
     body_update = update_response.json()

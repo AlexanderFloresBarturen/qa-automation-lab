@@ -163,7 +163,6 @@ def test_lock_expires_and_counter_resets(db, client, valid_user_payload):
 
     for _ in range(5):
         login_response = client.post("/users/login", data=payload)
-        login_body = login_response.json()
     
     user = db.query(UserModel).filter(
         UserModel.email == valid_user_payload["email"],
@@ -193,7 +192,6 @@ def test_successful_login_resets_counter(db, client, valid_user_payload):
 
     for _ in range(3):
         login_response = client.post("/users/login", data=payload)
-        login_body = login_response.json()
     
     payload["password"] = valid_user_payload["password"]
     login_response = client.post("/users/login", data=payload)

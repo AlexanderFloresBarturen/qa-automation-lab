@@ -6,6 +6,7 @@ __pycache__/
 
 # Virtual Environments
 venv/
+.venv
 
 # Pytest
 .pytest_cache/
@@ -28,3 +29,6 @@ test.db
 
 # Alembic
 alembic/README
+
+# Ruff
+.ruff_cache

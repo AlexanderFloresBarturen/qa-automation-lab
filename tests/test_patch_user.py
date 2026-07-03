@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import assert_valid_user_response, assert_user_not_found_response, assert_duplicate_email_response, assert_forbidden_response, assert_invalid_token_response, assert_not_authenticated_response
+from tests.helpers import assert_valid_user_response, assert_duplicate_email_response, assert_forbidden_response, assert_invalid_token_response, assert_not_authenticated_response
 
 #region POSITIVOS
 def test_patch_user_name_success(loged_user, patch_user):
