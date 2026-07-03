@@ -1,10 +1,8 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
 from app.core.settings import settings
 
 # this is the Alembic Config object, which provides
@@ -29,9 +27,9 @@ from app.database.connection import Base
 Este import es importante para forzar que SQLAlchemy registre
 el modelo antes de contruir la metadata
 """
-from app.models.user_model import UserModel
 from app.models.role_model import RoleModel
 from app.models.token_model import PasswordResetTokenModel
+from app.models.user_model import UserModel
 
 target_metadata = Base.metadata
 

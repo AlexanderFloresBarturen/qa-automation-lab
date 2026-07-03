@@ -209,9 +209,44 @@ Los avisos mostrados posteriormente por Pylance pertenecen al análisis de tipos
 
 ### isort
 
-**Estado:** Pendiente
+**Estado:** ✅ Implementado
 
-Se utilizará para mantener un orden consistente de las importaciones
+#### Objetivo
+
+Mantener una organización consistente de las importaciones del proyecto mediante una clasificación automática por categorías y orden alfabético.
+
+#### Comando
+
+```bash
+# Muestra los problemas de formato
+isort --check-only --diff .
+
+# Corrije los errores
+isort .
+```
+
+#### Decisiones adoptadas
+
+* Configuración centralizada mediante `pyproject.toml`.
+* Compatibilidad con Black mediante `profile = "black"`.
+* Misma longitud máxima de línea utilizada por Ruff y Black (`200` caracteres).
+* Aplicación sobre todo el repositorio para unificar el estilo de las importaciones.
+
+#### Configuración
+
+```toml
+[tool.isort]
+profile = "black"  # Organiza los imports de manera compatible con Black
+line_length = 200
+```
+
+#### Observaciones
+
+isort reorganiza únicamente las importaciones.
+
+No modifica la lógica del programa, no detecta errores y no realiza comprobaciones de tipos.
+
+Su función consiste exclusivamente en mantener una estructura consistente de los imports, facilitando la lectura y reduciendo diferencias de estilo entre desarrolladores.
 
 ---
 
@@ -231,18 +266,44 @@ Automatizará la ejecución del pipeline de calidad en cada Push y Pull Request.
 
 ---
 
-## Pipeline de Calidad
+## Comparativa de Herramientas del Pipeline
 
-Una vez completado el Sprint 5, el pipeline verificará automáticamente:
+| Herramienta | Análisis estático | Formato | Organización de imports | Análisis de tipos |
+|-------------|:-----------------:|:-------:|:-----------------------:|:-----------------:|
+| Ruff | ✅ | ❌ | ❌* | ❌ |
+| Black | ❌ | ✅ | ❌ | ❌ |
+| isort | ❌ | ❌ | ✅ | ❌ |
+| MyPy | ❌ | ❌ | ❌ | ✅ |
 
-* Análisis estático.
-* Formato del código.
-* Organización de importaciones.
-* Comprobación de tipos.
-* Ejecución de la suite de pruebas.
-* Cobertura de código.
+\* Ruff incorpora compatibilidad con la organización de imports mediante reglas inspiradas en isort. En este laboratorio se utiliza la herramienta **isort** de forma independiente con fines didácticos y para conocer el flujo tradicional utilizado en numerosos proyectos Python.
 
-El objetivo es impedir cambios que incumplan los estándates de calidad sean integrados al proyecto.
+### Pipeline de Calidad
+
+```text
+Edición del código
+        │
+        ▼
+Ruff
+(Análisis estático)
+        │
+        ▼
+Black
+(Formato)
+        │
+        ▼
+isort
+(Organización de imports)
+        │
+        ▼
+MyPy
+(Análisis de tipos)
+        │
+        ▼
+Pytest
+(Pruebas)
+```
+
+Cada herramienta aborda una dimensión distinta de la calidad del código. Esta separación de responsabilidades permite construir un pipeline modular donde cada etapa complementa a las anteriores sin duplicar funciones.
 
 ---
 

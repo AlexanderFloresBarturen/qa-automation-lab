@@ -1,17 +1,17 @@
+import uuid
+
+import pytest
 from fastapi.testclient import TestClient  # Permite probars APIs sin levantar Uvicorn.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from alembic import command
 from alembic.config import Config
-
-from app.main import app
+from app.core.settings import DatabaseEnvironment, settings
 from app.database.dependencies import get_db
+from app.main import app
 from app.models.user_model import UserModel
-from app.core.settings import settings, DatabaseEnvironment
 from tests.database import ensure_test_database_exists
-
-import pytest
-import uuid
 
 # region Configuración de DB de testing
 

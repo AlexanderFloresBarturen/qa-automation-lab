@@ -1,4 +1,4 @@
-from tests.helpers import assert_valid_user_response, assert_duplicate_email_response, assert_forbidden_response, assert_not_authenticated_response, assert_invalid_token_response
+from tests.helpers import assert_duplicate_email_response, assert_forbidden_response, assert_invalid_token_response, assert_not_authenticated_response, assert_valid_user_response
 
 
 # region POSITIVOS

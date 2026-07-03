@@ -14,3 +14,8 @@ select = ["E", "F"]  # Activa las reglas E (estilo) y F (Pyflakes)
 [tool.black]
 line-length = 200
 target-version = ["py312"]  # Indica que el proyecto se ejecuta sobre Python 3.12.x"
+
+# isort
+[tool.isort]
+profile = "black"  # Organiza los imports de manera compatible con Black
+line_length = 200

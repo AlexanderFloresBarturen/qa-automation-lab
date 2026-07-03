@@ -1,19 +1,20 @@
+import secrets
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-import secrets
 
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse
+from app.core.settings import settings
 from app.database.dependencies import get_db
-from app.models.user_model import UserModel
 from app.models.role_model import RoleModel
 from app.models.token_model import PasswordResetTokenModel
-from app.security.password import hash_password, verify_password
-from app.security.jwt import create_access_token
+from app.models.user_model import UserModel
+from app.schemas.user import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, ResetPasswordRequest, ResetPasswordResponse, UserCreate, UserPatch, UserResponse, UserUpdate
 from app.security.dependencies import get_current_user, require_admin
+from app.security.jwt import create_access_token
+from app.security.password import hash_password, verify_password
 from app.services.email_service import send_password_reset_email
-from app.core.settings import settings
 
 router = APIRouter()
 

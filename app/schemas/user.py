@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, model_validator, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.utils.password_validator import validate_password_strength
 

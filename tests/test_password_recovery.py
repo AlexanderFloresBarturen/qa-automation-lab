@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from unittest.mock import ANY, patch
+
 import pytest
-from unittest.mock import patch, ANY
 
 from app.models.token_model import PasswordResetTokenModel
 from app.models.user_model import UserModel
