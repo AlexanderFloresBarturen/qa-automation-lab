@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient  # Permite probars APIs sin levantar Uvicorn.
@@ -116,7 +117,7 @@ def user_payload():
 def patch_user(client):
     # El '*' obliga que todo lo que está a la derecha se pase con nombre
     def _patch_user(id, *, name=False, email=False, age=False, headers=""):
-        patch_payload = {}
+        patch_payload: dict[str, Any] = {}
         if name:
             patch_payload["name"] = "Diego Armando"
         if email:

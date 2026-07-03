@@ -11,6 +11,9 @@ Este documento describe el modelo de datos utilizado por el proyecto, las relaci
 
 Su objetivo es proporcionar una visión conceptual del esquema persistente sin entrar en detalles de implementación específicos de SQLAlchemy o Alembic.
 
+>**Nota**  
+>Los modelos utilizan **Typed ORM de SQLAlchemy 2** (`Mapped y mapped_column`) para proporcionar tipado estático completo y compatibilidad con MyPy.
+
 ---
 
 ## Diagrama Entidad–Relación

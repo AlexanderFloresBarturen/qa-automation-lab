@@ -19,3 +19,15 @@ target-version = ["py312"]  # Indica que el proyecto se ejecuta sobre Python 3.1
 [tool.isort]
 profile = "black"  # Organiza los imports de manera compatible con Black
 line_length = 200
+
+# MyPy
+[tool.mypy]
+python_version = "3.12"
+
+warn_return_any = true  # Avisa si una función devuelve Any
+warn_unused_configs = true  # Evita errores en el archivo de configuración
+
+disallow_untyped_defs = false  # Exige que todas las funciones estén tipadas
+check_untyped_defs = true  # Analiza la función aunque no tenga anotaciones
+
+ignore_missing_imports = true  # Evita analizar errores de terceros (imports)

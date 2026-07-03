@@ -31,6 +31,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     user_role = db.query(RoleModel).filter(RoleModel.name == "user").first()
 
     # Registrar el usuario
+    if user_role is None:
+        raise RuntimeError("Default role 'user' not found. Verify database migrations.")
+
     new_user = UserModel(name=user.name, email=user.email, age=user.age, password_hash=hash_password(user.password), role_id=user_role.id)
 
     db.add(new_user)

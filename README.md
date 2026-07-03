@@ -135,6 +135,20 @@ La arquitectura completa, las decisiones de diseño y los principales flujos de 
 
 ---
 
+## Calidad del Código
+
+Este proyecto utiliza un pipeline de calidad compuesto por:
+
+- ✅ Ruff
+- ✅ Black
+- ✅ isort
+- ✅ MyPy
+- ✅ Pytest
+
+Todos los cambios deben superar satisfactoriamente estas herramientas antes de integrarse en el proyecto.
+
+---
+
 ## Estructura del Proyecto
 
 ```text

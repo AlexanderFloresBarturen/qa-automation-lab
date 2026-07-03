@@ -252,9 +252,37 @@ Su función consiste exclusivamente en mantener una estructura consistente de lo
 
 ### MyPy
 
-**Estado:** Pendiente
+**Estado:** ✅ Completado
 
-Permitirá incorporar comprobación estática de tipos al proyecto.
+#### Objetivo
+
+Realizar análisis estático de tipos para detectar errores potenciales antes de la ejecución del programa.
+
+#### Decisiones adoptadas
+
+* Configuración centralizada mediante `pyproject.toml`.
+* Integración gradual después de Ruff, Black e isort.
+* Corrección de errores reales de tipado en lugar de ocultarlos mediante `type: ignore`.
+* Migración de los modelos al Typed ORM de SQLAlchemy 2 para obtener compatibilidad completa con MyPy.
+
+#### Configuración
+
+```toml
+[tool.mypy]
+python_version = "3.12"
+
+warn_return_any = true  # Avisa si una función devuelve Any
+warn_unused_configs = true  # Evita errores en el archivo de configuración
+
+disallow_untyped_defs = false  # Exige que todas las funciones estén tipadas
+check_untyped_defs = true  # Analiza la función aunque no tenga anotaciones
+
+ignore_missing_imports = true  # Evita analizar errores de terceros (imports)
+```
+
+#### Observaciones
+
+La migración al Typed ORM permitió que MyPy infiriera correctamente los tipos de los modelos SQLAlchemy, eliminando los falsos positivos asociados al uso de `Column(...)` del estilo declarativo clásico.
 
 ---
 
@@ -276,6 +304,9 @@ Automatizará la ejecución del pipeline de calidad en cada Push y Pull Request.
 | MyPy | ❌ | ❌ | ❌ | ✅ |
 
 \* Ruff incorpora compatibilidad con la organización de imports mediante reglas inspiradas en isort. En este laboratorio se utiliza la herramienta **isort** de forma independiente con fines didácticos y para conocer el flujo tradicional utilizado en numerosos proyectos Python.
+
+>**Nota:**  
+>Actualmente las cuatro herramientas se ejecutan satisfactoriamente sobre todo el proyecto.
 
 ### Pipeline de Calidad
 
@@ -304,6 +335,39 @@ Pytest
 ```
 
 Cada herramienta aborda una dimensión distinta de la calidad del código. Esta separación de responsabilidades permite construir un pipeline modular donde cada etapa complementa a las anteriores sin duplicar funciones.
+
+---
+
+## SQLAlchemy Typed ORM
+
+Durante la integración de MyPy se migraron todos los modelos al estilo moderno de SQLAlchemy 2.
+
+### Antes
+
+```python
+id = Column(Integer, primary_key=True)
+
+name = Column(String)
+
+role = relationship(...)
+```
+
+### Después
+
+```python
+id: Mapped[int] = mapped_column(primary_key=True)
+
+name: Mapped[str] = mapped_column(String)
+
+role: Mapped["RoleModel"] = relationship(...)
+```
+
+### Beneficios
+
+* Compatibilidad completa con MyPy.
+* Mejor autocompletado en el IDE.
+* Inferencia correcta de tipos.
+* Código alineado con las recomendaciones actuales de SQLAlchemy 2.
 
 ---
 

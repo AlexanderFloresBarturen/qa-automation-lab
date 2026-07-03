@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 from tests.helpers import assert_valid_user_response
@@ -69,7 +71,7 @@ def test_create_user_missing_age(client):
 
 
 def test_create_user_empty_payload(client):
-    payload = {}
+    payload: dict[str, Any] = {}
 
     response = client.post("/users", json=payload)
     body = response.json()
