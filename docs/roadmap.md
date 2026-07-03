@@ -1,6 +1,6 @@
 > **Documento:** Roadmap  
 > **Proyecto:** QA Automation Lab  
-> **Última actualización:** Sprint 4  
+> **Última actualización:** Sprint 5  
 > **Estado:** Vigente
 
 # Roadmap
@@ -263,3 +263,13 @@ Las próximas etapas estarán orientadas a fortalecer la automatización, la int
 - ✅ 98 % de cobertura.
 - ✅ Migraciones automáticas en testing.
 - ✅ Documentación técnica completa.
+
+## Mejoras Técnicas Identificadas
+
+Las siguientes mejoras fueron identificadas durante la evolución del proyecto y se incorporarán cuando aporten valor al laboratorio.
+
+### PostgreSQL
+
+- Implementar un índice único parcial sobre `users(email)` considerando únicamente usuarios activos (`is_active = TRUE`).
+- Incorporar índices adicionales orientados a optimizar consultas frecuentes.
+- Continuar profundizando en características avanzadas de PostgreSQL aplicadas al diseño de APIs backend.

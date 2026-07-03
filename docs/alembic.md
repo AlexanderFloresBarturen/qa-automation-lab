@@ -1,6 +1,6 @@
 > **Documento:** Alembic  
 > **Proyecto:** QA Automation Lab  
-> **Última actualización:** Sprint 4  
+> **Última actualización:** Sprint 5  
 > **Estado:** Vigente
 
 # Gestión de Migraciones
@@ -125,10 +125,13 @@ pytest
 pytest_sessionstart()
     │
     ▼
-Settings
+Seleccionar users_test
     │
     ▼
-Seleccionar users_test
+Verificar existencia de la base
+    │
+    ▼
+Crear users_test (si no existe)
     │
     ▼
 Alembic Upgrade Head
@@ -140,6 +143,34 @@ Inicio de la suite
 De esta manera, la base `users_test` siempre comienza las pruebas utilizando la última versión disponible del esquema.
 
 No es necesario ejecutar migraciones manualmente antes de lanzar la suite.
+
+---
+
+## Inicialización Automática de la Base de Datos de Testing
+
+Durante la ejecución de la suite de pruebas, el proyecto verifica automáticamente la existencia de la base de datos `users_test`.
+
+Si la base de datos no existe, se crea automáticamente antes de aplicar las migraciones mediante Alembic.
+
+Este comportamiento elimina la necesidad de crear manualmente la base de datos de testing y permite ejecutar la suite desde un entorno PostgreSQL completamente nuevo.
+
+El flujo completo es:
+
+```text
+pytest
+    │
+    ▼
+Verificar users_test
+    │
+    ▼
+Crear base si no existe
+    │
+    ▼
+Aplicar migraciones
+    │
+    ▼
+Ejecutar pruebas
+```
 
 ---
 
@@ -170,6 +201,19 @@ Durante el desarrollo del laboratorio se siguen las siguientes recomendaciones:
 * No modificar manualmente la tabla `alembic_version`.
 * Mantener las migraciones pequeñas y fáciles de revisar.
 * Versionar todas las migraciones junto con el código fuente.
+
+---
+
+## Datos Iniciakes (Seed Data)
+
+La migración inicial no solo crea la estructura de la base de datos. También inserta los datos mínimos necesarios para el funcionamiento del sistema.
+
+Actualmente se inicializan automáticamente los siguientes registros:
+
+* Rol `admin`
+* Rol `user`
+
+Estos registros forman parte de la configuración base de la aplicación y no se consideran datos de prueba.
 
 ---
 

@@ -1,6 +1,6 @@
 > **Documento:** Testing  
 > **Proyecto:** QA Automation Lab  
-> **Última actualización:** Sprint 4  
+> **Última actualización:** Sprint 5  
 > **Estado:** Vigente
 
 # Testing
@@ -61,9 +61,26 @@ Para conseguirlo se implementaron varios mecanismos complementarios:
 * `test_engine` exclusivo para testing.
 * `dependency_overrides` para sustituir `get_db()`.
 * Rollback automático mediante transacciones.
+* Creación automática de la base de datos de testing cuando no existe.
 * Migraciones automáticas antes de ejecutar la suite.
 
 Como resultado, todas las pruebas utilizan un entorno completamente aislado y reproducible.
+
+---
+
+## Preparación Automática del Entorno
+
+La infraestructura de testing prepara automáticamente el entorno antes de ejecutar la primera prueba.
+
+El proceso realiza las siguientes tareas:
+
+1. Selecciona la configuración correspondiente al entorno de testing.
+2. Comprueba si existe la base de datos `users_test`.
+3. Crea la base de datos si aún no existe.
+4. Aplica todas las migraciones disponibles mediante Alembic.
+5. Inicia la ejecución de la suite.
+
+Gracias a este proceso, un desarrollador únicamente necesita disponer de un servidor PostgreSQL operativo para ejecutar las pruebas.
 
 ---
 

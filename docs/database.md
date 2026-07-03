@@ -1,6 +1,6 @@
 > **Documento:** Modelo de Datos  
 > **Proyecto:** QA Automation Lab  
-> **Última actualización:** Sprint 4  
+> **Última actualización:** Sprint 5  
 > **Estado:** Vigente
 
 # Modelo de Datos
@@ -54,17 +54,17 @@ Representa los usuarios registrados en el sistema.
 
 #### Campos
 
-| Campo                 | Tipo     | Descripción                |
-| --------------------- | -------- | -------------------------- |
-| id                    | Integer  | Clave primaria             |
-| name                  | String   | Nombre del usuario         |
-| email                 | String   | Correo electrónico (único) |
-| password_hash         | String   | Contraseña cifrada         |
-| age                   | Integer  | Edad                       |
-| role_id               | Integer  | Rol asignado               |
-| failed_login_attempts | Integer  | Intentos fallidos          |
-| locked_until          | DateTime | Fin del bloqueo temporal   |
-| is_active             | Boolean  | Estado lógico del usuario  |
+| Campo                 | Tipo     | Descripción                    |
+| --------------------- | -------- | -----------------------------  |
+| id                    | Integer  | Clave primaria                 |
+| name                  | String   | Nombre del usuario             |
+| email                 | String   | Correo electrónico del usuario |
+| password_hash         | String   | Contraseña cifrada             |
+| age                   | Integer  | Edad                           |
+| role_id               | Integer  | Rol asignado                   |
+| failed_login_attempts | Integer  | Intentos fallidos              |
+| locked_until          | DateTime | Fin del bloqueo temporal       |
+| is_active             | Boolean  | Estado lógico del usuario      |
 
 #### Relaciones
 
@@ -117,7 +117,6 @@ Almacena los tokens utilizados durante el proceso de recuperación de contraseñ
 
 | Campo | Restricción |
 | ----- | ----------- |
-| email | UNIQUE      |
 | token | UNIQUE      |
 
 ---
@@ -126,10 +125,13 @@ Almacena los tokens utilizados durante el proceso de recuperación de contraseñ
 
 El modelo incorpora restricciones de negocio adicionales:
 
-* El email debe ser único.
+* El email debe ser único entre los usuarios activos.
 * Solo existe un token de recuperación activo por usuario.
 * Un token únicamente puede utilizarse una vez.
 * Los usuarios eliminados lógicamente permanecen almacenados mediante `is_active`.
+
+>**Nota**  
+>La implementación actual no utiliza una restricción `UNIQUE` sobre la columna `email`, ya que el proyecto permite reutilizar el email de usuarios eliminados lógicamente (`is_active = False`).
 
 ---
 

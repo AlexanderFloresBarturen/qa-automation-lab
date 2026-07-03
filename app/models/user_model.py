@@ -7,15 +7,15 @@ from app.database.connection import Base
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
-    name = Column(String)
+    name = Column(String, nullable=False)
 
-    email = Column(String)
+    email = Column(String, nullable=False)
 
-    age = Column(Integer)
+    age = Column(Integer, nullable=False)
     
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     password_hash = Column(String, nullable=False)
 

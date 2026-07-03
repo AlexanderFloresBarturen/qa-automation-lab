@@ -8,6 +8,7 @@ from app.main import app
 from app.database.dependencies import get_db
 from app.models.user_model import UserModel
 from app.core.settings import settings, DatabaseEnvironment
+from tests.database import ensure_test_database_exists
 
 import pytest
 import uuid
@@ -19,6 +20,8 @@ def pytest_sessionstart(session):
     settings.use_test_database()
 
     assert settings.CURRENT_DATABASE == DatabaseEnvironment.TEST
+
+    ensure_test_database_exists()
 
     alembic_cfg = Config("alembic.ini")
 
