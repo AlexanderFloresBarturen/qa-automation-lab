@@ -36,6 +36,9 @@ jobs:
       - name: Run isort
         run: isort --check-only .
       
+      - name: Run MyPy
+        run: mypy .
+      
       - name: Verify installation
         run: python --version
       
