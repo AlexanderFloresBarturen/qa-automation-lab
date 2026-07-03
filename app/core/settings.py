@@ -1,4 +1,9 @@
+import os
 from enum import Enum
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class DatabaseEnvironment(str, Enum):
@@ -8,14 +13,26 @@ class DatabaseEnvironment(str, Enum):
 
 class Settings:
     # region Database
-    DEVELOPMENT_DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@192.168.56.2:5432/users"
-
-    TEST_DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@192.168.56.2:5432/users_test"
-
-    DATABASE_URL: str = DEVELOPMENT_DATABASE_URL
+    DATABASE_HOST: str = os.getenv("DATABASE_HOST", "localhost")
+    DATABASE_PORT: int = int(os.getenv("DATABASE_PORT", "5432"))
+    DATABSE_USER: str = os.getenv("DATABASE_USER", "postgres")
+    DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", "postgres")
+    DEVELOPMENT_DATABASE_NAME: str = os.getenv("DEVELOPMENT_DATABASE_NAME", "users")
+    TEST_DATABASE_NAME: str = os.getenv("TEST_DATABASE_NAME", "users_test")
 
     CURRENT_DATABASE: DatabaseEnvironment = DatabaseEnvironment.DEVELOPMENT
+    
+    # endregion
 
+    # region Database URLs
+    @property
+    def DEVELOPMENT_DATABASE_URL(self) -> str:
+        return f"postgresql+psycopg://{self.DATABSE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DEVELOPMENT_DATABASE_NAME}"
+
+    @property
+    def TEST_DATABASE_URL(self) -> str:
+        return f"postgresql+psycopg://{self.DATABSE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.TEST_DATABASE_NAME}"
+    
     # endregion
 
     # region JWT
@@ -38,6 +55,9 @@ class Settings:
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 15
 
     # endregion
+
+    def __init__(self) -> None:
+        self.DATABASE_URL = self.DEVELOPMENT_DATABASE_URL
 
     # region Helpers
     def use_development_database(self) -> None:

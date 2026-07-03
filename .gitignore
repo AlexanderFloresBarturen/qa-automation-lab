@@ -32,3 +32,9 @@ alembic/README
 
 # Ruff
 .ruff_cache
+
+# MyPy
+.mypy_cache
+
+# env
+.env
