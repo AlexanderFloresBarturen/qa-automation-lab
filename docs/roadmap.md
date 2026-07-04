@@ -17,12 +17,12 @@ El laboratorio evoluciona de forma incremental, incorporando nuevas capacidades 
 
 |  Sprint  | Estado | Objetivo Principal           |
 | :------: | :----: | ---------------------------- |
-| Sprint 0 |    ✅   | Infraestructura inicial      |
-| Sprint 1 |    ✅   | Introducción al Testing      |
-| Sprint 2 |    ✅   | CRUD completo                |
-| Sprint 3 |    ✅   | Seguridad y Autenticación    |
-| Sprint 4 |    ✅   | QA Automation Avanzado       |
-| Sprint 5 |   🚧   | Integración Continua (CI/CD) |
+| Sprint 0 |   ✅   | Infraestructura inicial      |
+| Sprint 1 |   ✅   | Introducción al Testing      |
+| Sprint 2 |   ✅   | CRUD completo                |
+| Sprint 3 |   ✅   | Seguridad y Autenticación    |
+| Sprint 4 |   ✅   | QA Automation Avanzado       |
+| Sprint 5 |   ✅   | Integración Continua (CI/CD) |
 
 ---
 
@@ -176,20 +176,40 @@ El laboratorio alcanzó una arquitectura modular, una infraestructura de testing
 
 ## Sprint 5 - Integración Continua (Planificado)
 
-### Objetivos previstos
+### Objetivos
+
+* Incorporar un pipeline completo de Integración Continua.
+* Automatizar la validación de calidad del proyecto.
+* Integrar herramientas de análisis estático.
+* Automatizar la creación del esquema de base de datos.
+* Ejecutar automáticamente la suite completa de pruebas.
+
+### Implementaciones
+
+#### Calidad del código
+
+* Ruff
+* Black
+* isort
+* MyPy
+
+#### Arquitectura
+
+* Migración al Typed ORM de SQLAlchemy 2.
+* Configuración mediante variables de entorno (`.env`).
+* Uso de GitHub Secrets para información sensible.
+
+#### Integración Continua
 
 * GitHub Actions.
-* Integración Continua (CI).
-* Ejecución automática de pruebas.
-* Publicación de reportes.
-* Linters.
-* Formateadores automáticos.
-* Análisis estático.
-* Quality Gates.
+* PostgreSQL como servicio.
+* Verificación automática del servicio.
+* Ejecución automática de Alembic.
+* Ejecución automática de Pytest.
 
-### Resultado esperado
+### Resultado
 
-Automatizar completamente el pipeline de calidad para que cada cambio sea validado antes de integrarse al proyecto.
+El proyecto dispone ahora de un pipeline completamente automatizado capaz de validar la calidad del código, construir la base de datos desde cero y ejecutar la suite completa de pruebas antes de integrar cualquier cambio.
 
 ---
 
@@ -219,7 +239,8 @@ QA Automation Avanzado
         │
         ▼
 Sprint 5
-CI/CD
+Integración Continua
+Calidad Automatizada
 ```
 
 Cada sprint incorporó nuevas capacidades sin perder la simplicidad de las etapas anteriores, permitiendo que la arquitectura creciera de manera incremental.
@@ -242,6 +263,11 @@ Entre los principales aprendizajes destacan:
 * Pruebas de integración y End-to-End.
 * Gestión de cobertura y reportes.
 * Organización y documentación de proyectos técnicos.
+* Integración Continua mediante GitHub Actions.
+* Análisis estático con Ruff y MyPy.
+* Formateo automático con Black e isort.
+* Gestión de configuración mediante variables de entorno.
+* Uso de GitHub Secrets.
 
 ---
 
@@ -263,6 +289,11 @@ Las próximas etapas estarán orientadas a fortalecer la automatización, la int
 - ✅ 98 % de cobertura.
 - ✅ Migraciones automáticas en testing.
 - ✅ Documentación técnica completa.
+- ✅ Pipeline completo de GitHub Actions.
+- ✅ Integración de Ruff, Black, isort y MyPy.
+- ✅ Configuración mediante variables de entorno.
+- ✅ Integración automática con PostgreSQL.
+- ✅ Ejecución automática de Alembic.
 
 ## Mejoras Técnicas Identificadas
 
