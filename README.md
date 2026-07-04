@@ -103,6 +103,7 @@ Cada sprint incorpora nuevos conceptos tanto de desarrollo backend como de testi
 
 * Docker
 * Docker Compose
+* GitHub Actions
 
 ---
 
@@ -131,6 +132,8 @@ PostgreSQL
 
 La configuración del proyecto se encuentra centralizada mediante la clase `Settings`, utilizada por la aplicación, Alembic y la infraestructura de testing.
 
+Durante el Sprint 5 la configuración fue externalizada mediante variables de entorno (`.env`), permitiendo ejecutar el mismo código en distintos entornos (desarrollo, testing e integración continua) modificando únicamente la configuración.
+
 La arquitectura completa, las decisiones de diseño y los principales flujos de la aplicación se documentan en: [Arquitectura](/docs/architecture.md)
 
 ---
@@ -146,6 +149,38 @@ Este proyecto utiliza un pipeline de calidad compuesto por:
 - ✅ Pytest
 
 Todos los cambios deben superar satisfactoriamente estas herramientas antes de integrarse en el proyecto.
+
+---
+
+## Integración Continua
+
+El proyecto incorpora un pipeline de Integración Continua mediante GitHub Actions.
+
+En cada Push y Pull Request se ejecutan automáticamente las siguientes etapas:
+
+```text
+Ruff
+   │ 
+   ▼ 
+Black
+   │ 
+   ▼ 
+isort
+   │ 
+   ▼ 
+MyPy
+   │ 
+   ▼ 
+PostgreSQL
+   │ 
+   ▼ 
+Alembic
+   │ 
+   ▼ 
+Pytest
+```
+
+El objetivo es garantizar que el proyecto pueda construirse desde un entorno completamente limpio antes de integrar cualquier cambio.
 
 ---
 
@@ -194,17 +229,31 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Instalar dependencias
+### 3. Configurar las variables de entorno
+
+Crear un archivo `.env` a partir de `.env.example` y completar los valores correspondientes al entorno local.
+
+```bash
+cp .env.example .env
+```
+
+En Windows:
+
+```powershell
+copy .env.example .env
+```
+
+### 4. Instalar dependencias
 
 ```bash
 pip install -r requirements
 ```
 
-### 4. Levantar PostgreSQL
+### 5. Levantar PostgreSQL
 
 Consultar: [Docker](/docs/docker.md)
 
-### 5. Inicializar la base de datos de desarrollo
+### 6. Inicializar la base de datos de desarrollo
 
 Aplicar las migraciones sobre la base de datos de desarrollo:
 
@@ -214,7 +263,7 @@ alembic upgrade head
 
 **Nota:** La base de datos de testing (`users_test`) se migra automáticamente al ejecutar la suite de pruebas mediante Pytest. No es necesario aplicar las migraciones manualmente para el entorno de testing.
 
-### 6. Iniciar la aplicación
+### 7. Iniciar la aplicación
 
 ```bash
 uvicorn app.main:app --reload
@@ -222,7 +271,7 @@ uvicorn app.main:app --reload
 
 La documentación interactiva estará disponible en: `http://localhost:8000/docs`
 
-### 7. Ejecutar la suite de pruebas
+### 8. Ejecutar la suite de pruebas
 
 ```bash
 python -m pytest -v
@@ -257,7 +306,7 @@ El proyecto evoluciona mediante sprints incrementales. Cada uno incorpora nuevos
 | Sprint 2 | ✅ | CRUD completo y consolidación de la API |
 | Sprint 3 | ✅ | Seguridad, JWT, RBAC, recuperación de contraseña y control de acceso |
 | Sprint 4 | ✅ | Mocking, Monkeypatch, pruebas de integración, cobertura, reportes HTML y automatización de migraciones |
-| Sprint 5 | 🚧 | CI/CD, GitHub Actions, análisis estático y automatización avanzada |
+| Sprint 5 | ✅  | GitHub Actions, análisis estático, integración continua, migraciones automáticas y pipeline de calidad |
 
 ---
 
@@ -279,6 +328,12 @@ El proyecto evoluciona mediante sprints incrementales. Cada uno incorpora nuevos
 | Cobertura de código | 98 % |
 | Migraciones automáticas | ✅ |
 | Configuración centralizada | ✅ |
+| GitHub Actions | ✅ |
+| Integración Continua | ✅ |
+| Ruff | ✅ |
+| Black | ✅ |
+| isort | ✅ |
+| MyPy | ✅ |
 
 ---
 
@@ -288,12 +343,11 @@ Las siguientes etapas del laboratorio estarán orientadas a incorporar herramien
 
 Entre los objetivos se encuentran:
 
-* Integración continua mediante GitHub Actions.
-* Ejecución automática de pruebas en cada Pull Request.
-* Análisis estático de código.
-* Linters y formateadores automáticos.
-* Automatización del pipeline de calidad.
-* Publicación de reportes de cobertura como parte del proceso de integración continua.
+* Hooks de Pre-commit.
+* Publicación de reportes de cobertura.
+* Badges de GitHub Actions y cobertura.
+* Análisis de seguridad del código.
+* Matriz de pruebas con múltiples versiones de Python.
 
 ---
 

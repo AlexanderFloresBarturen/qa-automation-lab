@@ -37,7 +37,7 @@ El objetivo final del Sprint 5 es construir el siguiente flujo de trabajo:
 Editar Código
       │
       ▼
-Ruff (Lint/Análisis estático)
+Ruff (Lint / Análisis estático)
       │
       ▼
 Black (Formato)
@@ -49,13 +49,28 @@ isort (Imports)
 MyPy (Tipos)
       │
       ▼
-   Pytest
+   Commit
+      │
+      ▼
+    Push
       │
       ▼
 GitHub Actions
       │
       ▼
-   Merge
+  PostgreSQL
+      │
+      ▼
+   Alembic
+      │
+      ▼
+   Pytest
+      │
+      ▼
+Pull Request
+      │
+      ▼
+    Merge
 ```
 
 Cada etapa valida un aspecto distinto de la calidad del proyecto antes de permitir que los cambios sean integrados.
@@ -288,9 +303,63 @@ La migración al Typed ORM permitió que MyPy infiriera correctamente los tipos 
 
 ### GitHub Actions
 
-**Estado:** Pendiente
+**Estado:** ✅ Implementado
 
-Automatizará la ejecución del pipeline de calidad en cada Push y Pull Request.
+#### Objetivo
+
+Automatizar la validación del proyecto en un entorno limpio para garantizar que cada cambio pueda construirse, migrar la base de datos y ejecutar correctamente toda la suite de pruebas.
+
+#### Pipeline
+
+```text
+Checkout
+    │
+    ▼
+Setup Python
+    │
+    ▼
+Install dependencies
+    │
+    ▼
+PostgreSQL
+    │
+    ▼
+Verify PostgreSQL
+    │
+    ▼
+   Ruff
+    │
+    ▼
+   Black
+    │
+    ▼
+   isort
+    │
+    ▼
+   MyPy
+    │
+    ▼
+  Alembic
+    │
+    ▼
+  Pytest
+```
+
+#### Decisiones adoptadas
+
+* Construcción incremental del workflow, incorporando una etapa cada vez.
+* Uso de PostgreSQL como servicio dentro de GitHub Actions.
+* Ejecución automática de Alembic antes de la suite de pruebas.
+* Uso de GitHub Secrets para almacenar información sensible.
+* Externalización de la configuración mediante `.env`.
+* Validación completa del proyecto antes de permitir su integración.
+
+#### Beneficios
+
+* Verificación automática del proyecto desde un entorno limpio.
+* Detección temprana de errores de integración.
+* Reproducibilidad del proceso de construcción.
+* Pipeline alineado con prácticas habituales de integración continua.
 
 ---
 
@@ -371,6 +440,18 @@ role: Mapped["RoleModel"] = relationship(...)
 
 ---
 
+## Configuración mediante Variables de Entorno
+
+Durante el Sprint 5 se decidió externalizar la configuración del proyecto utilizando variables de entorno.
+
+La configuración local se almacena en un archivo `.env`, mientras que el repositorio incluye un archivo `.env.example` como plantilla para nuevos desarrolladores.
+
+En GitHub Actions las variables sensibles se almacenan mediante **GitHub Secrets**, evitando incorporar credenciales dentro del repositorio.
+
+Esta estrategia permite ejecutar el mismo código en distintos entornos (desarrollo, pruebas e integración continua) modificando únicamente la configuración y no la implementación.
+
+---
+
 ## Buenas Prácticas
 
 Durante el desarrollo se siguen las siguientes recomendaciones:
@@ -385,18 +466,25 @@ Durante el desarrollo se siguen las siguientes recomendaciones:
 
 ## Evolución
 
-Es documento evolucionará conforme avance el Sprint 5.
+Durante el Sprint 5 se incorporaron progresivamente las siguientes herramientas al pipeline de desarrollo:
 
-Las próximas incorporaciones previstas incluyen:
+* Ruff
+* Black
+* isort
+* MyPy
+* SQLAlchemy Typed ORM
+* Configuración mediante variables de entorno (`.env`)
+* GitHub Actions
+* Integración automática con PostgreSQL
+* Ejecución automática de Alembic
+* Ejecución automática de Pytest
 
-* Configuración de Ruff.
-* Integración de Black.
-* Configuración de isort.
-* Integración de MyPy.
-* GitHub Actions.
+Las siguientes mejoras previstas para futuros sprints incluyen:
+
 * Pre-commit Hooks.
-* Publicación de reportes.
+* Reportes de cobertura.
 * Badges de calidad.
+* Matrices de versiones de Python.
 
 ---
 
