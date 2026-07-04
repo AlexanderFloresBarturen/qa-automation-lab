@@ -18,15 +18,15 @@ jobs:
         image: postgres:17
 
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: ${{ secrets.DATABASE_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           POSTGRES_DB: users
         
         ports:
           - 5432:5432
         
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.DATABASE_USER }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -57,24 +57,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
       
-      - name: Verify PostgreSQL connection
-        env:
-          PGPASSWORD: postgres
-        run: |
-          pg_isready -h localhost -p 5432 -U postgres
-
-      - name: Run Alembic migrations
-        run: alembic upgrade head
-      
-      - name: Run tests
-        run: pytest
-
       - name: Run Ruff
         run: ruff check .
       
@@ -86,7 +69,21 @@ jobs:
       
       - name: Run MyPy
         run: mypy .
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
       
-      - name: Verify installation
-        run: python --version
+      - name: Verify PostgreSQL connection
+        env:
+          PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        run: |
+          pg_isready -h localhost -p 5432 -U ${{ secrets.DATABASE_USER }}
+
+      - name: Run Alembic migrations
+        run: alembic upgrade head
+      
+      - name: Run tests
+        run: pytest
       
