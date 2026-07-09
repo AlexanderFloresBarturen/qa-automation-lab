@@ -18,34 +18,6 @@ from app.services.email_service import send_password_reset_email
 
 router = APIRouter()
 
-
-# region register_user
-@router.post("/", response_model=UserResponse, status_code=201)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    # Consultar si existe un usuario con ese correo
-    existing_user = db.query(UserModel).filter(UserModel.email == user.email, UserModel.is_active.is_(True)).first()
-
-    if existing_user:
-        raise HTTPException(status_code=409, detail="Email already exists")
-
-    user_role = db.query(RoleModel).filter(RoleModel.name == "user").first()
-
-    # Registrar el usuario
-    if user_role is None:
-        raise RuntimeError("Default role 'user' not found. Verify database migrations.")
-
-    new_user = UserModel(name=user.name, email=user.email, age=user.age, password_hash=hash_password(user.password), role_id=user_role.id)
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
-
-
-# endregion
-
-
 # region get_user
 @router.get("/{user_id}", response_model=UserResponse, status_code=200)
 def get_user(user_id: int = Path(gt=0), current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):

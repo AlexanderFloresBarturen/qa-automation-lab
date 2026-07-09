@@ -10,7 +10,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allo
                    allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(auth.router, prefix="/users", tags=["Users"])
+app.include_router(auth.router)
 
 
 @app.get("/")
