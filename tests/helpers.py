@@ -34,14 +34,14 @@ def assert_duplicate_email_response(body):
     assert body["detail"] == "Email already exists"
 
 
-def assert_forbidden_response(body):
+def assert_not_found_response(body):
     assert len(body) == 1
 
     assert "detail" in body
 
     assert isinstance(body["detail"], str)
 
-    assert body["detail"] == "Forbidden"
+    assert body["detail"] == "Not Found"
 
 
 def assert_not_authenticated_response(body):

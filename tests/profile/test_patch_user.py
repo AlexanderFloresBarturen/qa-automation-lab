@@ -1,13 +1,15 @@
+from typing import Any
+
 import pytest
 
-from tests.helpers import assert_duplicate_email_response, assert_forbidden_response, assert_invalid_token_response, assert_not_authenticated_response, assert_valid_user_response
+from tests.helpers import assert_duplicate_email_response, assert_invalid_token_response, assert_not_authenticated_response, assert_not_found_response, assert_valid_user_response
 
 
 # region POSITIVOS
 def test_patch_user_name_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True, headers=headers)
+    patch_response = patch_user(name=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -23,7 +25,7 @@ def test_patch_user_name_success(loged_user, patch_user):
 def test_patch_user_email_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], email=True, headers=headers)
+    patch_response = patch_user(email=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -39,7 +41,7 @@ def test_patch_user_email_success(loged_user, patch_user):
 def test_patch_user_age_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], age=True, headers=headers)
+    patch_response = patch_user(age=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -55,7 +57,7 @@ def test_patch_user_age_success(loged_user, patch_user):
 def test_patch_user_name_email_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True, email=True, headers=headers)
+    patch_response = patch_user(name=True, email=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -71,7 +73,7 @@ def test_patch_user_name_email_success(loged_user, patch_user):
 def test_patch_user_name_age_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True, age=True, headers=headers)
+    patch_response = patch_user(name=True, age=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -87,7 +89,7 @@ def test_patch_user_name_age_success(loged_user, patch_user):
 def test_patch_user_email_age_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], email=True, age=True, headers=headers)
+    patch_response = patch_user(email=True, age=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -103,7 +105,7 @@ def test_patch_user_email_age_success(loged_user, patch_user):
 def test_patch_user_full_success(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True, email=True, age=True, headers=headers)
+    patch_response = patch_user(name=True, email=True, age=True, headers=headers)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 200
@@ -120,23 +122,23 @@ def test_patch_reuse_email(client, user_payload, get_token):
     user_one = user_payload()
     user_two = user_payload()
 
-    post_response_first = client.post("/users", json=user_one)
+    post_response_first = client.post("/auth/register", json=user_one)
     body_post_first = post_response_first.json()
 
-    post_response_second = client.post("/users", json=user_two)
+    post_response_second = client.post("/auth/register", json=user_two)
     body_post_second = post_response_second.json()
 
     token_user_one = get_token(username=user_one["email"], password=user_one["password"])
     headers_user_one = {}
     headers_user_one["Authorization"] = f"Bearer {token_user_one}"
-    delete_response = client.delete(f"/users/{body_post_first['id']}", headers=headers_user_one)
+    delete_response = client.delete("/profile", headers=headers_user_one)
 
     token_user_two = get_token(username=user_two["email"], password=user_two["password"])
     headers_user_two = {}
     headers_user_two["Authorization"] = f"Bearer {token_user_two}"
     patch_payload = {}
     patch_payload["email"] = f"{body_post_first['email']}"
-    patch_response = client.patch(f"/users/{body_post_second['id']}", headers=headers_user_two, json=patch_payload)
+    patch_response = client.patch("/profile", headers=headers_user_two, json=patch_payload)
     body_patch = patch_response.json()
 
     assert delete_response.status_code == 204
@@ -156,23 +158,25 @@ def test_patch_reuse_email(client, user_payload, get_token):
 
 
 # region NEGATIVOS
-def test_patch_user_not_found(patch_user, loged_user):
+def test_patch_user_not_found(client, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=9999, name=True, headers=headers)
+    patch_payload: dict[str, Any] = {}
+    patch_payload["name"] = "someone"
+    patch_response = client.patch("/profile/99999", json=patch_payload, headers=headers)
     body_patch = patch_response.json()
 
-    assert patch_response.status_code == 403
+    assert patch_response.status_code == 404
 
-    assert_forbidden_response(body_patch)
+    assert_not_found_response(body_patch)
 
 
 def test_patch_deleted_user(client, loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    delete_response = client.delete(f"/users/{loged_user['id']}", headers=headers)
+    delete_response = client.delete("/profile", headers=headers)
 
-    patch_response = patch_user(id=loged_user["id"], name=True, headers=headers)
+    patch_response = patch_user(name=True, headers=headers)
     body_patch = patch_response.json()
 
     assert delete_response.status_code == 204
@@ -184,14 +188,14 @@ def test_patch_deleted_user(client, loged_user, patch_user):
 def test_patch_user_duplicate_email(client, user_payload, loged_user):
     user_two = user_payload()
 
-    post_response_two = client.post("/users", json=user_two)
+    post_response_two = client.post("/auth/register", json=user_two)
     body_post_second = post_response_two.json()
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
     patch_payload = {}
     patch_payload["email"] = f"{body_post_second['email']}"
-    patch_response = client.patch(f"/users/{loged_user['id']}", headers=headers, json=patch_payload)
+    patch_response = client.patch("/profile", headers=headers, json=patch_payload)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 409
@@ -202,7 +206,7 @@ def test_patch_user_duplicate_email(client, user_payload, loged_user):
 def test_patch_empty_payload(client, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = client.patch(f"/users/{loged_user['id']}", headers=headers, json={})
+    patch_response = client.patch("/profile", headers=headers, json={})
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 422
@@ -216,9 +220,7 @@ def test_patch_empty_payload(client, loged_user):
 
 
 def test_patch_user_without_token(loged_user, patch_user):
-    headers = {}
-    headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True)
+    patch_response = patch_user(name=True)
     patch_body = patch_response.json()
 
     assert patch_response.status_code == 401
@@ -229,7 +231,7 @@ def test_patch_user_without_token(loged_user, patch_user):
 def test_patch_user_invalid_token(loged_user, patch_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=loged_user["id"], name=True, headers={"Authorization": "Bearer invalid_token"})
+    patch_response = patch_user(name=True, headers={"Authorization": "Bearer invalid_token"})
     patch_body = patch_response.json()
 
     assert patch_response.status_code == 401
@@ -240,18 +242,20 @@ def test_patch_user_invalid_token(loged_user, patch_user):
 def test_patch_another_user(client, user_payload, loged_user, patch_user):
     user_two = user_payload()
 
-    created_response_two = client.post("/users", json=user_two)
+    created_response_two = client.post("/auth/register", json=user_two)
     created_body_two = created_response_two.json()
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(id=created_body_two["id"], name=True, headers=headers)
+    patch_payload: dict[str, Any] = {}
+    patch_payload["name"] = "someone"
+    patch_response = client.patch(f"/profile/{created_body_two["id"]}", json=patch_payload, headers=headers)
     patch_body = patch_response.json()
 
     assert created_response_two.status_code == 201
-    assert patch_response.status_code == 403
+    assert patch_response.status_code == 404
 
-    assert_forbidden_response(patch_body)
+    assert_not_found_response(patch_body)
 
 
 # endregion
@@ -273,7 +277,7 @@ con distintos conjuntos de datos, en este caso:
 def test_patch_invalid_fields(client, loged_user, payload, error_type, error_loc):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = client.patch(f"/users/{loged_user['id']}", headers=headers, json=payload)
+    patch_response = client.patch("/profile", headers=headers, json=payload)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 422
@@ -292,7 +296,7 @@ def test_patch_invalid_fields(client, loged_user, payload, error_type, error_loc
 def test_patch_null_fields(client, loged_user, payload, msg):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = client.patch(f"/users/{loged_user['id']}", headers=headers, json=payload)
+    patch_response = client.patch("/profile", headers=headers, json=payload)
     body_patch = patch_response.json()
 
     assert patch_response.status_code == 422

@@ -7,7 +7,7 @@ from tests.helpers import assert_valid_user_response
 
 # region POSITIVOS
 def test_create_user_success(client, valid_user_payload):
-    response = client.post("/users", json=valid_user_payload)
+    response = client.post("/auth/register", json=valid_user_payload)
     body = response.json()
 
     assert response.status_code == 201
@@ -27,10 +27,10 @@ def test_create_user_duplicate_email(client, user_payload):
     user_first = user_payload()
     user_second = user_payload()
 
-    response_first = client.post("/users", json=user_first)
+    response_first = client.post("/auth/register", json=user_first)
 
     user_second["email"] = user_first["email"]
-    response_second = client.post("/users", json=user_second)
+    response_second = client.post("/auth/register", json=user_second)
     body_second = response_second.json()
 
     assert response_first.status_code == 201
@@ -45,7 +45,7 @@ def test_create_user_name_too_short(client, valid_user_payload):
     payload = valid_user_payload.copy()
     payload["name"] = "A"
 
-    response = client.post("/users", json=payload)
+    response = client.post("/auth/register", json=payload)
     body = response.json()
 
     assert response.status_code == 422
@@ -59,7 +59,7 @@ def test_create_user_name_too_short(client, valid_user_payload):
 def test_create_user_missing_age(client):
     payload = {"name": "Alex", "email": "alex@gmail.com"}
 
-    response = client.post("/users", json=payload)
+    response = client.post("/auth/register", json=payload)
     body = response.json()
 
     assert response.status_code == 422
@@ -73,7 +73,7 @@ def test_create_user_missing_age(client):
 def test_create_user_empty_payload(client):
     payload: dict[str, Any] = {}
 
-    response = client.post("/users", json=payload)
+    response = client.post("/auth/register", json=payload)
     body = response.json()
 
     assert response.status_code == 422
@@ -104,7 +104,7 @@ def test_create_user_empty_payload(client):
 )
 def test_create_user_invalid_password(client, user_payload, password, type, error_message):
     payload = user_payload(password=password)
-    response = client.post("/users", json=payload)
+    response = client.post("/auth/register", json=payload)
     body = response.json()
 
     assert response.status_code == 422

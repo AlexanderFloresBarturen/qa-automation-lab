@@ -1,6 +1,6 @@
 > **Documento:** Arquitectura del Sistema  
 > **Proyecto:** QA Automation Lab  
-> **Última actualización:** Sprint 4  
+> **Última actualización:** Sprint 5  
 > **Estado:** Vigente
 
 # Arquitectura
@@ -59,7 +59,7 @@ app/
 ├── core/ 
 ├── database/ 
 ├── models/ 
-├── routes/ 
+├── routers/ 
 ├── schemas/ 
 ├── security/ 
 ├── services/ 
@@ -67,6 +67,40 @@ app/
 ```
 
 Cada módulo agrupa una única responsabilidad dentro de la aplicación.
+
+---
+
+## Organización por dominios
+
+### Auth
+
+Responsable de:
+
+* Login
+* Register
+* Forgot Password
+* Reset Password
+
+---
+
+### Profile
+
+Responsable de:
+
+* Obtener perfil
+* Actualizar perfil
+* Eliminar cuenta
+
+**Siempre trabaja sobre el usuario autenticado.**
+
+---
+
+### Users
+
+Responsable de:
+
+* Administración de usuarios
+* Operaciones reservadas a administradores
 
 ---
 
@@ -224,7 +258,7 @@ El proceso de autenticación valida las credenciales del usuario y genera un JWT
 Cliente
     │
     ▼
-POST /users/login
+POST /auth/login
     │
     ▼
 Buscar usuario
