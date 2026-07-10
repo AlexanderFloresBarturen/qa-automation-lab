@@ -1,4 +1,4 @@
-from tests.helpers import assert_not_found_response, assert_invalid_token_response, assert_not_authenticated_response
+from tests.helpers import assert_invalid_token_response, assert_not_authenticated_response, assert_not_found_response
 
 
 # region POSITIVOS

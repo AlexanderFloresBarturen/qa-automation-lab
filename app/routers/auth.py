@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 import secrets
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,7 +10,7 @@ from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.token_model import PasswordResetTokenModel
 from app.models.user_model import UserModel
-from app.schemas.user import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, ResetPasswordRequest, ResetPasswordResponse, UserResponse, UserCreate
+from app.schemas.user import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, ResetPasswordRequest, ResetPasswordResponse, UserCreate, UserResponse
 from app.security.jwt import create_access_token
 from app.security.password import hash_password, verify_password
 from app.services.email_service import send_password_reset_email

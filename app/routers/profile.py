@@ -43,7 +43,7 @@ def update_user(user: UserUpdate, current_user: UserModel = Depends(get_current_
 @router.patch("/", response_model=UserResponse, status_code=200)
 def partial_update_user(user: UserPatch, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     """
-    Convierte user en un diccionario y solo incluye los campos que 
+    Convierte user en un diccionario y solo incluye los campos que
     tienen un valor explicito asignado.
     """
     update_data = user.model_dump(exclude_unset=True)

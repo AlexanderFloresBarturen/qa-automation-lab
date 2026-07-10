@@ -1,4 +1,4 @@
-from tests.helpers import assert_duplicate_email_response, assert_not_found_response, assert_invalid_token_response, assert_not_authenticated_response, assert_valid_user_response
+from tests.helpers import assert_duplicate_email_response, assert_invalid_token_response, assert_not_authenticated_response, assert_not_found_response, assert_valid_user_response
 
 
 # region POSITIVOS
@@ -64,7 +64,7 @@ def test_update_user_duplicate_email(client, user_payload, loged_user, valid_upd
 def test_update_deleted_user(client, loged_user, valid_update_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    client.delete(f"/profile", headers=headers)
+    client.delete("/profile", headers=headers)
 
     update_response = client.put("/profile", headers=headers, json=valid_update_payload)
     body_update = update_response.json()

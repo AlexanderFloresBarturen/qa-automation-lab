@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from tests.helpers import assert_duplicate_email_response, assert_not_found_response, assert_invalid_token_response, assert_not_authenticated_response, assert_valid_user_response
+from tests.helpers import assert_duplicate_email_response, assert_invalid_token_response, assert_not_authenticated_response, assert_not_found_response, assert_valid_user_response
 
 
 # region POSITIVOS

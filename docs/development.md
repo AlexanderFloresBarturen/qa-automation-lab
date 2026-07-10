@@ -273,6 +273,12 @@ Su función consiste exclusivamente en mantener una estructura consistente de lo
 
 Realizar análisis estático de tipos para detectar errores potenciales antes de la ejecución del programa.
 
+#### Comando
+
+```bash
+mypy .
+```
+
 #### Decisiones adoptadas
 
 * Configuración centralizada mediante `pyproject.toml`.
