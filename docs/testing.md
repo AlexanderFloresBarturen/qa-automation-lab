@@ -84,6 +84,47 @@ Gracias a este proceso, un desarrollador únicamente necesita disponer de un ser
 
 ---
 
+## Organización de las Pruebas
+
+La suite de pruebas sigue la misma organización por dominios utilizada por la aplicación.
+
+Cada conjunto de pruebas se agrupa según la responsabilidad funcional que valida, facilitando la navegación por el proyecto y manteniendo una correspondencia directa con la estructura de los routers.
+
+La estructura prevista es la siguiente:
+
+```text
+tests/
+│
+├── auth/
+│   ├── test_login.py
+│   ├── test_register.py
+│   ├── test_forgot_password.py
+│   └── test_reset_password.py
+│
+├── profile/
+│   ├── test_get_profile.py
+│   ├── test_update_profile.py
+│   ├── test_partial_update_profile.py
+│   └── test_delete_profile.py
+│
+├── users/
+│   ├── test_get_users.py
+│   ├── test_get_user.py
+│   ├── test_create_user.py
+│   ├── test_update_user.py
+│   ├── test_partial_update_user.py
+│   └── test_delete_user.py
+│
+├── conftest.py
+├── database.py
+├── helpers.py
+└── test_database.py
+```
+
+Esta organización permite mantener una correspondencia clara entre la estructura de la API, los routers y la suite de pruebas, facilitando el mantenimiento y la evolución del proyecto.
+
+---
+
 ## Fixtures
 
 La infraestructura de testing se apoya en fixtures reutilizables que eliminan duplicación de código y facilitan la preparación del entorno de pruebas.
@@ -202,6 +243,7 @@ Durante el desarrollo del laboratorio se adoptaron las siguientes prácticas:
 * Las dependencias externas se aíslan mediante Mock cuando es necesario.
 * Las pruebas de integración validan flujos completos del sistema.
 * La base de datos de desarrollo nunca es utilizada durante la ejecución de la suite.
+* La organización de la suite debe reflejar la organización de los dominios de la aplicación.
 
 ---
 

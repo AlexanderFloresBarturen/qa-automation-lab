@@ -29,11 +29,12 @@ Cada sprint incorpora nuevos conceptos tanto de desarrollo backend como de testi
 
 ### API REST
 
-* CRUD completo de usuarios
+* Autenticación mediante JWT
+* Gestión del perfil del usuario autenticado
+* Administración de usuarios
+* Recuperación segura de contraseñas
 * Validaciones mediante Pydantic
 * Soft Delete
-* Manejo consistente de códigos HTTP
-* Documentación automática mediante Swagger/OpenAPI
 
 ### Persistencia
 
@@ -74,6 +75,8 @@ Cada sprint incorpora nuevos conceptos tanto de desarrollo backend como de testi
 * Servicios desacoplados
 * Gestión independiente de entornos de desarrollo y testing
 * Migraciones sincronizadas entre bases de datos
+
+>Los endpoints se organizan por dominios funcionales (auth, profile y users), favoreciendo una separación clara de responsabilidades entre autenticación, gestión del perfil y administración.
 
 ---
 
@@ -292,6 +295,7 @@ La documentación técnica del proyecto se encuentra organizada por áreas con e
 | [Alembic](/docs/alembic.md) | Gestión de migraciones, versionado del esquema y sincronización entre desarrollo y testing. |
 | [Docker](/docs/docker.md) | Configuración del entorno mediante Docker y Docker Compose. |
 | [Roadmap](/docs/roadmap.md) | Evolución del proyecto por sprints, funcionalidades implementadas y planificación de futuras etapas.|
+| [Development](/docs/development.md) | Flujo de desarrollo del proyecto, herramientas usadas y decisiones tomadas en la contrucción. |
 
 ---
 
@@ -334,6 +338,7 @@ El proyecto evoluciona mediante sprints incrementales. Cada uno incorpora nuevos
 | Black | ✅ |
 | isort | ✅ |
 | MyPy | ✅ |
+| Organización por dominios (Auth/Profile/Users) | ✅ |
 
 ---
 

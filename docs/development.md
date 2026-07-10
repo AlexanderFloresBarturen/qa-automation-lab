@@ -458,6 +458,22 @@ Esta estrategia permite ejecutar el mismo código en distintos entornos (desarro
 
 ---
 
+## Estrategia de Refactorización
+
+Durante la evolución del proyecto se adoptó una estrategia de refactorización incremental para minimizar riesgos y facilitar la revisión de cambios.
+
+Las principales reglas seguidas son:
+
+* Cada rama de refactorización debe tener un único objetivo.
+* Cada iteración debe mantener la aplicación en un estado funcional.
+* Los cambios arquitectónicos se realizan antes de incorporar nueva funcionalidad.
+* Cada iteración finaliza con un commit independiente y descriptivo.
+* La lógica de negocio no debe modificarse durante una refactorización estructural.
+
+Esta estrategia permite detectar errores de forma temprana, simplifica las revisiones de código y facilita la integración progresiva de cambios de arquitectura.
+
+---
+
 ## Buenas Prácticas
 
 Durante el desarrollo se siguen las siguientes recomendaciones:
@@ -467,6 +483,12 @@ Durante el desarrollo se siguen las siguientes recomendaciones:
 * Incorporar nuevas herramientas únicamente cuando aporten valor al proyecto.
 * Mantener una configuración centralizada y fácilmente mantenible.
 * Automatizar siempre que sea posible las tareas repetitivas.
+* Mantener una única responsabilidad por rama de desarrollo.
+* Separar las refactorizaciones de la incorporación de nuevas funcionalidades.
+* Preferir iteraciones pequeñas frente a cambios masivos.
+* Mantener la aplicación funcional después de cada iteración.
+* Ejecutar las pruebas relacionadas antes de finalizar una refactorización.
+* Actualizar la documentación cuando una decisión arquitectónica modifique la organización del proyecto.
 
 ---
 
