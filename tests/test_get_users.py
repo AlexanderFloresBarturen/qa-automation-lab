@@ -2,8 +2,8 @@ def test_get_users_success(client, admin_user, user_payload):
     user_one = user_payload()
     user_two = user_payload()
 
-    created_response_one = client.post("/users", json=user_one)
-    created_response_two = client.post("/users", json=user_two)
+    created_response_one = client.post("/auth/register", json=user_one)
+    created_response_two = client.post("/auth/register", json=user_two)
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
