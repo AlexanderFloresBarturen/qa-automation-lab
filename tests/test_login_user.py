@@ -5,12 +5,12 @@ from app.models.user_model import UserModel
 
 # region POSITIVOS
 def test_login_user_success(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -27,12 +27,12 @@ def test_login_user_success(client, valid_user_payload):
 
 # region NEGATIVOS
 def test_login_nonexisting_user(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = "nonexisting@email.com"
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -46,12 +46,12 @@ def test_login_nonexisting_user(client, valid_user_payload):
 
 
 def test_login_incorrect_password(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MuSuperPassword123!"
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -69,7 +69,7 @@ def test_login_incorrect_password(client, valid_user_payload):
 
 # region Tests de bloqueo de cuenta
 def test_login_increments_failed_attempts(db, client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     user_before = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"], UserModel.is_active.is_(True)).first()
 
@@ -78,7 +78,7 @@ def test_login_increments_failed_attempts(db, client, valid_user_payload):
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MySuperPassword123!"
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     user_after = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"], UserModel.is_active.is_(True)).first()
@@ -100,14 +100,14 @@ def test_login_increments_failed_attempts(db, client, valid_user_payload):
 
 
 def test_account_locked_after_five_attempts(db, client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MySuperPassword123!"
 
     for _ in range(5):
-        login_response = client.post("/users/login", data=payload)
+        login_response = client.post("/auth/login", data=payload)
         login_body = login_response.json()
 
     user = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"], UserModel.is_active.is_(True)).first()
@@ -128,18 +128,18 @@ def test_account_locked_after_five_attempts(db, client, valid_user_payload):
 
 
 def test_locked_account_cannot_login(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MySuperPassword123!"
 
     for _ in range(5):
-        login_response = client.post("/users/login", data=payload)
+        login_response = client.post("/auth/login", data=payload)
         login_body = login_response.json()
 
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert create_response.status_code == 201
@@ -155,14 +155,14 @@ def test_locked_account_cannot_login(client, valid_user_payload):
 
 
 def test_lock_expires_and_counter_resets(db, client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MySuperPassword123!"
 
     for _ in range(5):
-        login_response = client.post("/users/login", data=payload)
+        login_response = client.post("/auth/login", data=payload)
 
     user = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"], UserModel.is_active.is_(True)).first()
 
@@ -170,7 +170,7 @@ def test_lock_expires_and_counter_resets(db, client, valid_user_payload):
 
     db.commit()
 
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
 
     db.refresh(user)
 
@@ -182,17 +182,17 @@ def test_lock_expires_and_counter_resets(db, client, valid_user_payload):
 
 
 def test_successful_login_resets_counter(db, client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = "MySuperPassword123!"
 
     for _ in range(3):
-        login_response = client.post("/users/login", data=payload)
+        login_response = client.post("/auth/login", data=payload)
 
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
 
     user = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"], UserModel.is_active.is_(True)).first()
 
@@ -208,19 +208,19 @@ def test_successful_login_resets_counter(db, client, valid_user_payload):
 
 # region Test endpoint de prueba /me
 def test_get_me_success(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     payload = {}
     payload["username"] = valid_user_payload["email"]
     payload["password"] = valid_user_payload["password"]
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     token = login_body["access_token"]
 
     headers = {}
     headers["Authorization"] = f"Bearer {token}"
-    me_response = client.get("/users/test/me", headers=headers)
+    me_response = client.get("/tests/me", headers=headers)
     me_body = me_response.json()
     print(me_body)
 
@@ -234,16 +234,16 @@ def test_get_me_success(client, valid_user_payload):
 
 
 def test_get_me_without_token(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
-    me_response = client.get("/users/test/me")
+    me_response = client.get("/tests/me")
 
     assert create_response.status_code == 201
     assert me_response.status_code == 401
 
 
 def test_get_me_invalid_token(client):
-    me_response = client.get("/users/test/me", headers={"Authorization": "Bearer invalid_token"})
+    me_response = client.get("/tests/me", headers={"Authorization": "Bearer invalid_token"})
 
     assert me_response.status_code == 401
 

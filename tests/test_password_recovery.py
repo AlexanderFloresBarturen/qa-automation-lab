@@ -11,7 +11,7 @@ from tests.helpers import assert_reset_password_invalid_token_response
 
 # region forgot-password
 def test_forgot_password_success(db, client, created_user):
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
     fp_body = fp_response.json()
 
     token = db.query(PasswordResetTokenModel).filter(PasswordResetTokenModel.user_id == created_user["id"]).first()
@@ -36,7 +36,7 @@ def test_forgot_password_success(db, client, created_user):
 def test_forgot_password_nonexisting_email(db, client):
     quantity_before = db.query(PasswordResetTokenModel).count()
 
-    fp_response = client.post("/users/forgot-password", json={"email": "email@email.com"})
+    fp_response = client.post("/auth/forgot-password", json={"email": "email@email.com"})
     fp_body = fp_response.json()
 
     quantity_after = db.query(PasswordResetTokenModel).count()
@@ -57,7 +57,7 @@ def test_forgot_password_nonexisting_email(db, client):
 
 def test_forgot_password_invalidates_previous_token(db, client, created_user):
     for _ in range(3):
-        client.post("/users/forgot-password", json={"email": created_user["email"]})
+        client.post("/auth/forgot-password", json={"email": created_user["email"]})
 
     tokens = db.query(PasswordResetTokenModel).filter(PasswordResetTokenModel.user_id == created_user["id"]).order_by(PasswordResetTokenModel.created_at).all()
 
@@ -79,9 +79,9 @@ send_password_reset_email()
 """
 
 
-@patch("app.routes.users.send_password_reset_email")
+@patch("app.routers.auth.send_password_reset_email")
 def test_forgot_password_calls_email_service(mock_send_email, client, created_user):
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
 
     assert fp_response.status_code == 200
 
@@ -89,11 +89,11 @@ def test_forgot_password_calls_email_service(mock_send_email, client, created_us
     mock_send_email.assert_called_once_with(email=created_user["email"], token=ANY)
 
 
-@patch("app.routes.users.send_password_reset_email")
+@patch("app.routers.auth.send_password_reset_email")
 def test_forgot_password_email_service_unavailable(mock_send_email, client, created_user):
     mock_send_email.return_value = False
 
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
     fp_body = fp_response.json()
 
     assert fp_response.status_code == 500
@@ -110,9 +110,9 @@ def test_forgot_password_email_service_unavailable(mock_send_email, client, crea
     mock_send_email.assert_called_once_with(email=created_user["email"], token=ANY)
 
 
-@patch("app.routes.users.send_password_reset_email", wraps=send_password_reset_email)
+@patch("app.routers.auth.send_password_reset_email", wraps=send_password_reset_email)
 def test_forgot_password_spy_email_service(spy_send_email, client, created_user):
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
 
     assert fp_response.status_code == 200
 
@@ -122,11 +122,11 @@ def test_forgot_password_spy_email_service(spy_send_email, client, created_user)
     assert spy_send_email.call_args.kwargs["email"] == created_user["email"]
 
 
-@patch("app.routes.users.send_password_reset_email")
+@patch("app.routers.auth.send_password_reset_email")
 def test_forgot_password_email_service_exception(mock_send_email, client, created_user):
     mock_send_email.side_effect = ConnectionError("SMTP server unavailable")
 
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
     fp_body = fp_response.json()
 
     assert fp_response.status_code == 500
@@ -153,9 +153,9 @@ def test_forgot_password_monkeypatch_email_failure(monkeypatch, client, created_
         # print("SOY FAKE")
         return False
 
-    monkeypatch.setattr("app.routes.users.send_password_reset_email", fake_email_service)
+    monkeypatch.setattr("app.routers.auth.send_password_reset_email", fake_email_service)
 
-    fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
     fp_body = fp_response.json()
 
     assert fp_response.status_code == 500
@@ -175,7 +175,7 @@ def test_forgot_password_monkeypatch_email_failure(monkeypatch, client, created_
 # region reset-password
 def test_reset_password_success(db, client, user_reset_password_payload):
     rp_payload = user_reset_password_payload()
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
     rp_body = rp_response.json()
 
     token = db.query(PasswordResetTokenModel).filter(PasswordResetTokenModel.token == rp_payload["token"]).first()
@@ -195,7 +195,7 @@ def test_reset_password_success(db, client, user_reset_password_payload):
 def test_reset_password_invalid_token(client):
     rp_payload = {"token": "invalid_token", "new_password": "NewPassword123!"}
 
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
     rp_body = rp_response.json()
 
     assert rp_response.status_code == 400
@@ -205,8 +205,8 @@ def test_reset_password_invalid_token(client):
 
 def test_reset_password_used_token(client, user_reset_password_payload):
     rp_payload = user_reset_password_payload()
-    rp_response_one = client.post("/users/reset-password", json=rp_payload)
-    rp_response_two = client.post("/users/reset-password", json=rp_payload)
+    rp_response_one = client.post("/auth/reset-password", json=rp_payload)
+    rp_response_two = client.post("/auth/reset-password", json=rp_payload)
     rp_body = rp_response_two.json()
 
     assert rp_response_one.status_code == 200
@@ -223,7 +223,7 @@ def test_reset_password_expired_token(db, client, user_reset_password_payload):
     token.expires_at = datetime.now() - timedelta(minutes=1)
     db.commit()
 
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
     rp_body = rp_response.json()
 
     assert rp_response.status_code == 400
@@ -243,7 +243,7 @@ def test_reset_password_expired_token(db, client, user_reset_password_payload):
 )
 def test_reset_password_invalid_password(client, user_reset_password_payload, password, type, error_message):
     rp_payload = user_reset_password_payload(password=password)
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
     rp_body = rp_response.json()
 
     assert rp_response.status_code == 422
@@ -265,7 +265,7 @@ def test_reset_password_updates_hash(db, client, user_reset_password_payload):
 
     old_hash = token.user.password_hash
 
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
 
     db.refresh(token.user)
 
@@ -277,20 +277,20 @@ def test_reset_password_updates_hash(db, client, user_reset_password_payload):
 
 
 def test_reset_password_unlocks_account(db, client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
     login_payload = {}
     login_payload["username"] = valid_user_payload["email"]
     login_payload["password"] = "MySuperPassword123!"
 
     for _ in range(5):
-        login_response = client.post("/users/login", data=login_payload)
+        login_response = client.post("/auth/login", data=login_payload)
 
-    fp_response = client.post("/users/forgot-password", json={"email": valid_user_payload["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": valid_user_payload["email"]})
     fp_body = fp_response.json()
 
     rp_payload = {"token": fp_body["token"], "new_password": "NewPassword123!"}
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
 
     user = db.query(UserModel).filter(UserModel.email == valid_user_payload["email"]).first()
 
@@ -308,24 +308,24 @@ def test_reset_password_unlocks_account(db, client, valid_user_payload):
 
 # region flujo completo
 def test_reset_password_changes_login_credentials(client, valid_user_payload):
-    create_response = client.post("/users", json=valid_user_payload)
+    create_response = client.post("/auth/register", json=valid_user_payload)
 
-    fp_response = client.post("/users/forgot-password", json={"email": valid_user_payload["email"]})
+    fp_response = client.post("/auth/forgot-password", json={"email": valid_user_payload["email"]})
     fp_body = fp_response.json()
 
     new_password = "NewPassword123!"
     rp_payload = {"token": fp_body["token"], "new_password": new_password}
-    rp_response = client.post("/users/reset-password", json=rp_payload)
+    rp_response = client.post("/auth/reset-password", json=rp_payload)
 
     login_payload_old_pwd = {}
     login_payload_old_pwd["username"] = valid_user_payload["email"]
     login_payload_old_pwd["password"] = valid_user_payload["password"]
-    login_response_old_pwd = client.post("/users/login", data=login_payload_old_pwd)
+    login_response_old_pwd = client.post("/auth/login", data=login_payload_old_pwd)
 
     login_payload_new_pwd = {}
     login_payload_new_pwd["username"] = valid_user_payload["email"]
     login_payload_new_pwd["password"] = new_password
-    login_response_new_pwd = client.post("/users/login", data=login_payload_new_pwd)
+    login_response_new_pwd = client.post("/auth/login", data=login_payload_new_pwd)
 
     assert create_response.status_code == 201
     assert fp_response.status_code == 200

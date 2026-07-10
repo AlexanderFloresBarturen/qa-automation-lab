@@ -132,7 +132,7 @@ def patch_user(client):
 
 @pytest.fixture
 def created_user(client, valid_user_payload):
-    response = client.post("/users", json=valid_user_payload)
+    response = client.post("/auth/register", json=valid_user_payload)
 
     assert response.status_code == 201
 
@@ -141,11 +141,11 @@ def created_user(client, valid_user_payload):
 
 @pytest.fixture
 def loged_user(client, valid_user_payload):
-    created_response = client.post("/users", json=valid_user_payload)
+    created_response = client.post("/auth/register", json=valid_user_payload)
     created_body = created_response.json()
 
     payload = {"username": valid_user_payload["email"], "password": valid_user_payload["password"]}
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert created_response.status_code == 201
@@ -160,7 +160,7 @@ def loged_user(client, valid_user_payload):
 def get_token(client):
     def _get_token(*, username="", password=""):
         payload = {"username": username, "password": password}
-        login_response = client.post("/users/login", data=payload)
+        login_response = client.post("/auth/login", data=payload)
         login_body = login_response.json()
 
         assert login_response.status_code == 200
@@ -173,7 +173,7 @@ def get_token(client):
 @pytest.fixture
 def user_reset_password_payload(client, created_user):
     def _user_reset_password_payload(*, password="NewPassword123!"):
-        fp_response = client.post("/users/forgot-password", json={"email": created_user["email"]})
+        fp_response = client.post("/auth/forgot-password", json={"email": created_user["email"]})
         fp_body = fp_response.json()
 
         assert fp_response.status_code == 200
@@ -185,7 +185,7 @@ def user_reset_password_payload(client, created_user):
 
 @pytest.fixture
 def admin_user(db, client, valid_user_payload):
-    created_response = client.post("/users", json=valid_user_payload)
+    created_response = client.post("/auth/register", json=valid_user_payload)
     created_body = created_response.json()
 
     user = db.query(UserModel).filter(UserModel.id == created_body["id"]).first()
@@ -195,7 +195,7 @@ def admin_user(db, client, valid_user_payload):
     db.commit()
 
     payload = {"username": valid_user_payload["email"], "password": valid_user_payload["password"]}
-    login_response = client.post("/users/login", data=payload)
+    login_response = client.post("/auth/login", data=payload)
     login_body = login_response.json()
 
     assert created_response.status_code == 201
