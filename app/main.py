@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import users
 from app.routers import auth
+from app.routers import profile
 from app.routers import test
 
 app = FastAPI()
@@ -11,6 +12,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allo
 
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(profile.router)
 app.include_router(test.router)
 
 

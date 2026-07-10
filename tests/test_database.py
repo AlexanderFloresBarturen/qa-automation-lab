@@ -3,7 +3,7 @@ from app.security.password import verify_password
 
 
 def test_create_user_saves_correct_data_in_database(client, db, valid_user_payload):
-    response = client.post("/users", json=valid_user_payload)
+    response = client.post("/auth/register", json=valid_user_payload)
     body = response.json()
 
     user = db.query(UserModel).filter(UserModel.id == body["id"]).first()
@@ -27,7 +27,7 @@ def test_update_user_saves_correct_data_in_database(client, db, loged_user, vali
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    response = client.put(f"/users/{loged_user['id']}", headers=headers, json=valid_update_payload)
+    response = client.put("/profile", headers=headers, json=valid_update_payload)
 
     quantity_after = db.query(UserModel).count()
 
@@ -49,7 +49,7 @@ def test_update_user_saves_correct_data_in_database(client, db, loged_user, vali
 def test_delete_user_change_state_in_database(client, db, loged_user):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    response = client.delete(f"/users/{loged_user['id']}", headers=headers)
+    response = client.delete("/profile", headers=headers)
 
     user_deleted = db.query(UserModel).filter(UserModel.id == loged_user["id"]).first()
 
@@ -69,7 +69,7 @@ def test_patch_user_updates_database(db, loged_user, patch_user):
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    response = patch_user(id=loged_user["id"], name=True, headers=headers)
+    response = patch_user(name=True, headers=headers)
     body = response.json()
 
     quantity_after = db.query(UserModel).count()
