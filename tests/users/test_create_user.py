@@ -40,7 +40,7 @@ def test_create_user_duplicate_email(client, admin_user, user_payload):
 
     assert body_second["detail"] == "Email already exists"
 
-def test_create_user_standar_user(client, loged_user, user_payload):
+def test_create_user_standard_user(client, loged_user, user_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
     payload = user_payload()
