@@ -98,13 +98,12 @@ tests/
 ├── auth/
 │   ├── test_login.py
 │   ├── test_register.py
-│   ├── test_forgot_password.py
-│   └── test_reset_password.py
+│   └── test_password_recovery.py
 │
 ├── profile/
 │   ├── test_get_profile.py
 │   ├── test_update_profile.py
-│   ├── test_partial_update_profile.py
+│   ├── test_patch_profile.py
 │   └── test_delete_profile.py
 │
 ├── users/
@@ -112,7 +111,7 @@ tests/
 │   ├── test_get_user.py
 │   ├── test_create_user.py
 │   ├── test_update_user.py
-│   ├── test_partial_update_user.py
+│   ├── test_patch_user.py
 │   └── test_delete_user.py
 │
 ├── conftest.py
