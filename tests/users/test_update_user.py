@@ -1,4 +1,3 @@
-# region POSITIVOS
 from typing import Any
 
 from tests.helpers import assert_duplicate_email_response, assert_user_not_found_response, assert_valid_user_response

@@ -10,12 +10,12 @@ router = APIRouter(prefix="/profile", tags=["Profile"])
 
 
 @router.get("/", response_model=ProfileResponse, status_code=200)
-def get_user(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_user_profile(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     return current_user
 
 
 @router.delete("/", status_code=204)
-def delete_user(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_user_profile(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     current_user.is_active = False
 
     db.commit()
@@ -24,7 +24,7 @@ def delete_user(current_user: UserModel = Depends(get_current_user), db: Session
 
 
 @router.put("/", response_model=ProfileResponse, status_code=200)
-def update_user(user: ProfileUpdate, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+def update_user_profile(user: ProfileUpdate, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     existing_email = db.query(UserModel).filter(UserModel.email == user.email, UserModel.id != current_user.id, UserModel.is_active.is_(True)).first()
 
     if existing_email:
@@ -41,7 +41,7 @@ def update_user(user: ProfileUpdate, current_user: UserModel = Depends(get_curre
 
 
 @router.patch("/", response_model=ProfileResponse, status_code=200)
-def partial_update_user(user: ProfilePatch, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+def partial_update_user_profile(user: ProfilePatch, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Convierte user en un diccionario y solo incluye los campos que
     tienen un valor explicito asignado.

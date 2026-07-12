@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.user_model import UserModel
-from app.schemas import UserDetailResponse, CreateUserRequest
-from app.schemas.user import UpdateUserRequest
+from app.schemas import UserDetailResponse, CreateUserRequest, UpdateUserRequest, PatchUserRequest
 from app.security.dependencies import require_admin
 from app.security.password import hash_password
 
@@ -65,6 +64,33 @@ def update_user(user: UpdateUserRequest, user_id: int = Path(gt=0), _: UserModel
     user_to_update.name = user.name
     user_to_update.email = user.email
     user_to_update.age = user.age
+
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
+
+@router.patch("/{user_id}", response_model=UserDetailResponse, status_code=200)
+def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
+    """
+    Convierte user en un diccionario y solo incluye los campos que
+    tienen un valor explicito asignado.
+    """
+    user_to_update = db.query(UserModel).filter(UserModel.id == user_id).first()
+
+    if user_to_update is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_data = user.model_dump(exclude_unset=True)
+
+    if "email" in update_data:
+        existing_email = db.query(UserModel).filter(UserModel.email == update_data["email"], UserModel.id != user_id, UserModel.is_active.is_(True)).first()
+
+        if existing_email:
+            raise HTTPException(status_code=409, detail="Email already exists")
+
+    for field, value in update_data.items():
+        setattr(user_to_update, field, value)
 
     db.commit()
     db.refresh(user_to_update)
