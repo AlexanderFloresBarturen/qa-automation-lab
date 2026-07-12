@@ -13,6 +13,7 @@ def assert_valid_user_response(body):
 
     assert body["id"] > 0
 
+
 def assert_valid_user_response_admin(body):
     assert len(body) == 5
 

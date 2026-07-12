@@ -4,11 +4,12 @@ from tests.helpers import assert_duplicate_email_response, assert_user_not_found
 
 # region POSITIVOS
 
+
 def test_update_user_success(client, admin_user, user_payload, valid_update_payload):
     user_payload = user_payload()
     register_response = client.post("auth/register", json=user_payload)
     register_body = register_response.json()
-    
+
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
     update_response = client.put(f"users/{register_body["id"]}", headers=headers, json=valid_update_payload)
@@ -70,6 +71,7 @@ def test_update_user_duplicate_email(client, user_payload, admin_user, valid_upd
 
     assert_duplicate_email_response(body_put)
 
+
 def test_update_user_standard_user(client, user_payload, loged_user, valid_update_payload):
     user_one = user_payload()
 
@@ -89,11 +91,12 @@ def test_update_user_standard_user(client, user_payload, loged_user, valid_updat
 
     assert update_body["detail"] == "Admin access required"
 
+
 def test_update_user_empty_payload(client, user_payload, admin_user):
     user_one = user_payload()
 
-    register_response = client.post("/auth/register", json=user_one)
-    
+    client.post("/auth/register", json=user_one)
+
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
     payload: dict[str, Any] = {}
@@ -114,5 +117,6 @@ def test_update_user_empty_payload(client, user_payload, admin_user):
     assert body["detail"][0]["loc"] == ["body", "name"]
     assert body["detail"][1]["loc"] == ["body", "email"]
     assert body["detail"][2]["loc"] == ["body", "age"]
+
 
 # endregion

@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 
 from app.utils.password_validator import validate_password_strength
 
+
 class CreateUserRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)  # Los ... son para indicar que el campo es obligatorio
     email: EmailStr
@@ -13,6 +14,7 @@ class CreateUserRequest(BaseModel):
     def validate_password(cls, v: str) -> str:
         return validate_password_strength(v)
 
+
 class UserDetailResponse(BaseModel):
     id: int
     name: str
@@ -23,10 +25,12 @@ class UserDetailResponse(BaseModel):
     # Permite convertir modelos SQLAlchemy a respuestas FastAPI
     model_config = {"from_attributes": True}
 
+
 class UpdateUserRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)  # Los ... son para indicar que el campo es obligatorio
     email: EmailStr
     age: int = Field(..., ge=18, le=65)
+
 
 class PatchUserRequest(BaseModel):
     name: str | None = Field(None, min_length=2, max_length=50)

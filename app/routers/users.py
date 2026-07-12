@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.user_model import UserModel
-from app.schemas import UserDetailResponse, CreateUserRequest, UpdateUserRequest, PatchUserRequest
+from app.schemas.user import CreateUserRequest, PatchUserRequest, UpdateUserRequest, UserDetailResponse
 from app.security.dependencies import require_admin
 from app.security.password import hash_password
 
@@ -26,6 +26,7 @@ def get_user(user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), d
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
+
 
 @router.post("/", response_model=UserDetailResponse, status_code=201)
 def create_user(user: CreateUserRequest, _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
@@ -49,13 +50,14 @@ def create_user(user: CreateUserRequest, _: UserModel = Depends(require_admin), 
 
     return new_user
 
+
 @router.put("/{user_id}", response_model=UserDetailResponse, status_code=200)
 def update_user(user: UpdateUserRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
     user_to_update = db.query(UserModel).filter(UserModel.id == user_id).first()
 
     if user_to_update is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     existing_email = db.query(UserModel).filter(UserModel.email == user.email, UserModel.id != user_id, UserModel.is_active.is_(True)).first()
 
     if existing_email:
@@ -70,6 +72,7 @@ def update_user(user: UpdateUserRequest, user_id: int = Path(gt=0), _: UserModel
 
     return user_to_update
 
+
 @router.patch("/{user_id}", response_model=UserDetailResponse, status_code=200)
 def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
     """
@@ -80,7 +83,7 @@ def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: Us
 
     if user_to_update is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     update_data = user.model_dump(exclude_unset=True)
 
     if "email" in update_data:
@@ -97,11 +100,12 @@ def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: Us
 
     return user_to_update
 
+
 @router.delete("/{user_id}", status_code=204)
 def delete_user(user_id: int = Path(gt=0), current_user: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
     if current_user.id == user_id:
         raise HTTPException(status_code=400, detail="Use DELETE /profile to delete your own account.")
-    
+
     user_to_delete = db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active.is_(True)).first()
 
     if user_to_delete is None:

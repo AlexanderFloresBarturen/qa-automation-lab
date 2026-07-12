@@ -2,6 +2,7 @@ from tests.helpers import assert_user_not_found_response
 
 # region POSITIVOS
 
+
 def test_delete_user_success(client, user_payload, admin_user):
     user_one = user_payload()
     register_response = client.post("/auth/register", json=user_one)
@@ -25,6 +26,7 @@ def test_delete_user_success(client, user_payload, admin_user):
 
 
 # endregion
+
 
 # region NEGATIVOS
 def test_delete_user_not_found(client, admin_user):
@@ -57,6 +59,7 @@ def test_delete_user_twice(client, user_payload, admin_user):
 
     assert_user_not_found_response(body_delete_second)
 
+
 def test_delete_user_itself(client, admin_user):
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
@@ -68,9 +71,10 @@ def test_delete_user_itself(client, admin_user):
     assert len(delete_body) == 1
 
     assert "detail" in delete_body
-    
+
     assert isinstance(delete_body["detail"], str)
 
     assert delete_body["detail"] == "Use DELETE /profile to delete your own account."
+
 
 # endregion

@@ -7,6 +7,7 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str
 
+
 class RegisterRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)  # Los ... son para indicar que el campo es obligatorio
     email: EmailStr
@@ -18,6 +19,7 @@ class RegisterRequest(BaseModel):
     def validate_password(cls, v: str) -> str:
         return validate_password_strength(v)
 
+
 class RegisterResponse(BaseModel):
     id: int
     name: str
@@ -26,6 +28,7 @@ class RegisterResponse(BaseModel):
 
     # Permite convertir modelos SQLAlchemy a respuestas FastAPI
     model_config = {"from_attributes": True}
+
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

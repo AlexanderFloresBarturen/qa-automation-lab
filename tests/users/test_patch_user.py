@@ -188,6 +188,7 @@ def test_patch_reuse_email(client, user_payload, get_token, admin_user):
 
 # endregion
 
+
 # region NEGATIVOS
 def test_patch_user_not_found(client, admin_user):
     headers = {}
@@ -200,6 +201,7 @@ def test_patch_user_not_found(client, admin_user):
     assert patch_response.status_code == 404
 
     assert_user_not_found_response(body_patch)
+
 
 def test_patch_user_duplicate_email(client, user_payload, admin_user):
     user_one = user_payload()
@@ -222,6 +224,7 @@ def test_patch_user_duplicate_email(client, user_payload, admin_user):
 
     assert_duplicate_email_response(body_patch)
 
+
 def test_update_user_standard_user(client, user_payload, loged_user, patch_user):
     user_one = user_payload()
 
@@ -239,5 +242,6 @@ def test_update_user_standard_user(client, user_payload, loged_user, patch_user)
     assert "detail" in body_patch
 
     assert body_patch["detail"] == "Admin access required"
+
 
 # endregion

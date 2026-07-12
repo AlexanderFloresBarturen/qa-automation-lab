@@ -44,7 +44,7 @@ def test_admin_user_management_end_to_end(client, admin_user, user_payload, vali
 
     assert delete_response.status_code == 204
 
-    get_response_two = client.get(f"/users/", headers=headers)
+    get_response_two = client.get("/users/", headers=headers)
     get_body_two = get_response_two.json()
 
     assert get_response_two.status_code == 200

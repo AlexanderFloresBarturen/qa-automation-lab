@@ -10,7 +10,7 @@ from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.token_model import PasswordResetTokenModel
 from app.models.user_model import UserModel
-from app.schemas import LoginResponse, RegisterRequest, RegisterResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse
+from app.schemas.auth import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse
 from app.security.jwt import create_access_token
 from app.security.password import hash_password, verify_password
 from app.services.email_service import send_password_reset_email

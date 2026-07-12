@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
+
 class ProfileResponse(BaseModel):
     id: int
     name: str

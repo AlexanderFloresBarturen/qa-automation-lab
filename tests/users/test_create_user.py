@@ -2,6 +2,7 @@ from typing import Any
 
 from tests.helpers import assert_invalid_token_response, assert_valid_user_response_admin
 
+
 # region POSITIVOS
 def test_create_user_success(client, admin_user, user_payload):
     headers = {}
@@ -17,7 +18,10 @@ def test_create_user_success(client, admin_user, user_payload):
     assert post_body["name"] == payload["name"]
     assert post_body["email"] == payload["email"]
     assert post_body["age"] == payload["age"]
+
+
 # endregion
+
 
 # region NEGATIVOS
 def test_create_user_duplicate_email(client, admin_user, user_payload):
@@ -40,6 +44,7 @@ def test_create_user_duplicate_email(client, admin_user, user_payload):
 
     assert body_second["detail"] == "Email already exists"
 
+
 def test_create_user_standard_user(client, loged_user, user_payload):
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
@@ -53,6 +58,7 @@ def test_create_user_standard_user(client, loged_user, user_payload):
 
     assert post_body["detail"] == "Admin access required"
 
+
 def test_create_user_invalid_token(client, user_payload):
     headers = {}
     headers["Authorization"] = "Bearer invalid token"
@@ -63,6 +69,7 @@ def test_create_user_invalid_token(client, user_payload):
     assert post_response.status_code == 401
 
     assert_invalid_token_response(post_body)
+
 
 def test_create_user_empty_payload(client, admin_user):
     headers = {}
@@ -85,5 +92,6 @@ def test_create_user_empty_payload(client, admin_user):
     assert body["detail"][0]["loc"] == ["body", "name"]
     assert body["detail"][1]["loc"] == ["body", "email"]
     assert body["detail"][2]["loc"] == ["body", "age"]
+
 
 # endregion

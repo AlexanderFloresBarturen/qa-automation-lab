@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.models.user_model import UserModel
-from app.schemas import UserDetailResponse
+from app.schemas.user import UserDetailResponse
 from app.security.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/tests", tags=["Tests"])
