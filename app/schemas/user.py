@@ -18,6 +18,7 @@ class UserDetailResponse(BaseModel):
     name: str
     email: EmailStr
     age: int
+    is_active: bool
 
     # Permite convertir modelos SQLAlchemy a respuestas FastAPI
     model_config = {"from_attributes": True}

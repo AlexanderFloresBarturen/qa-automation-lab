@@ -13,7 +13,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/", response_model=list[UserDetailResponse])
 def get_users(_: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
-    users = db.query(UserModel).all()
+    users = db.query(UserModel).order_by(UserModel.id).all()
 
     return users
 
@@ -96,3 +96,19 @@ def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: Us
     db.refresh(user_to_update)
 
     return user_to_update
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(user_id: int = Path(gt=0), current_user: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="Use DELETE /profile to delete your own account.")
+    
+    user_to_delete = db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active.is_(True)).first()
+
+    if user_to_delete is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_to_delete.is_active = False
+
+    db.commit()
+
+    return

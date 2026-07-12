@@ -11,7 +11,7 @@ def test_patch_user_name_success(client, admin_user, user_payload, patch_user):
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(name=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(name=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -32,7 +32,7 @@ def test_patch_user_email_success(client, admin_user, user_payload, patch_user):
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(email=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(email=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -53,7 +53,7 @@ def test_patch_user_age_success(client, admin_user, user_payload, patch_user):
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(age=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(age=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -74,7 +74,7 @@ def test_patch_user_name_email_success(client, admin_user, user_payload, patch_u
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(name=True, email=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(name=True, email=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -95,7 +95,7 @@ def test_patch_user_name_age_success(client, admin_user, user_payload, patch_use
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(name=True, age=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(name=True, age=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -116,7 +116,7 @@ def test_patch_user_email_age_success(client, admin_user, user_payload, patch_us
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(email=True, age=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(email=True, age=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -137,7 +137,7 @@ def test_patch_user_full_success(client, admin_user, user_payload, patch_user):
 
     headers = {}
     headers["Authorization"] = f"Bearer {admin_user["token"]}"
-    patch_response = patch_user(name=True, email=True, age=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(name=True, email=True, age=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
@@ -230,7 +230,7 @@ def test_update_user_standard_user(client, user_payload, loged_user, patch_user)
 
     headers = {}
     headers["Authorization"] = f"Bearer {loged_user["token"]}"
-    patch_response = patch_user(name=True, is_admin=True, id_user=register_body["id"], headers=headers)
+    patch_response = patch_user(name=True, is_admin=True, user_id=register_body["id"], headers=headers)
     body_patch = patch_response.json()
 
     assert register_response.status_code == 201
