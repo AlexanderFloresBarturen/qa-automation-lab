@@ -1,6 +1,6 @@
 from typing import Any
 
-from tests.helpers import assert_duplicate_email_response, assert_user_not_found_response, assert_valid_user_response
+from tests.helpers import assert_duplicate_email_response, assert_user_not_found_response, assert_valid_user_response_admin
 
 # region POSITIVOS
 
@@ -20,7 +20,7 @@ def test_update_user_success(client, admin_user, user_payload, valid_update_payl
     assert update_response.status_code == 200
     assert get_response.status_code == 200
 
-    assert_valid_user_response(body_get)
+    assert_valid_user_response_admin(body_get)
 
     assert body_update["name"] == valid_update_payload["name"]
     assert body_update["email"] == valid_update_payload["email"]

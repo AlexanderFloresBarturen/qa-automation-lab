@@ -13,6 +13,23 @@ def assert_valid_user_response(body):
 
     assert body["id"] > 0
 
+def assert_valid_user_response_admin(body):
+    assert len(body) == 5
+
+    assert "id" in body
+    assert "name" in body
+    assert "email" in body
+    assert "age" in body
+    assert "is_active" in body
+
+    assert isinstance(body["id"], int)
+    assert isinstance(body["name"], str)
+    assert isinstance(body["email"], str)
+    assert isinstance(body["age"], int)
+    assert isinstance(body["is_active"], bool)
+
+    assert body["id"] > 0
+
 
 def assert_user_not_found_response(body):
     assert len(body) == 1

@@ -1,4 +1,4 @@
-from tests.helpers import assert_valid_user_response, assert_user_not_found_response
+from tests.helpers import assert_valid_user_response_admin, assert_user_not_found_response
 
 def test_get_user_success(client, admin_user, user_payload):
     user_one = user_payload()
@@ -14,7 +14,7 @@ def test_get_user_success(client, admin_user, user_payload):
     assert created_response.status_code == 201
     assert get_response.status_code == 200
 
-    assert_valid_user_response(get_body)
+    assert_valid_user_response_admin(get_body)
 
     assert get_body["id"] == created_body["id"]
     assert get_body["name"] == created_body["name"]

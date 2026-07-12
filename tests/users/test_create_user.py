@@ -1,6 +1,6 @@
 from typing import Any
 
-from tests.helpers import assert_invalid_token_response, assert_valid_user_response
+from tests.helpers import assert_invalid_token_response, assert_valid_user_response_admin
 
 # region POSITIVOS
 def test_create_user_success(client, admin_user, user_payload):
@@ -12,7 +12,7 @@ def test_create_user_success(client, admin_user, user_payload):
 
     assert post_response.status_code == 201
 
-    assert_valid_user_response(post_body)
+    assert_valid_user_response_admin(post_body)
 
     assert post_body["name"] == payload["name"]
     assert post_body["email"] == payload["email"]

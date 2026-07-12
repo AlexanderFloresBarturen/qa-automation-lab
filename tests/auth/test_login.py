@@ -227,7 +227,7 @@ def test_get_me_success(client, valid_user_payload):
     assert create_response.status_code == 201
     assert me_response.status_code == 200
 
-    assert len(me_body) == 4
+    assert len(me_body) == 5
 
     assert me_body["name"] == valid_user_payload["name"]
     assert me_body["email"] == valid_user_payload["email"]

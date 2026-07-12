@@ -126,13 +126,9 @@ def patch_user(client):
             patch_payload["age"] = 36
 
         if is_admin:
-            response = client.patch(f"/users/{user_id}", json=patch_payload, headers=headers)
-            assert response.status_code == 200
-            return response
+            return client.patch(f"/users/{user_id}", json=patch_payload, headers=headers)
         else:
-            response = client.patch("/profile", json=patch_payload, headers=headers)
-            assert response.status_code == 200
-            return response
+            return client.patch("/profile", json=patch_payload, headers=headers)
 
     return _patch_user  # <-- Importante no olvidar esta línea
 

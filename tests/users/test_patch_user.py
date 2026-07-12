@@ -1,7 +1,7 @@
 # region POSITIVOS
 from typing import Any
 
-from tests.helpers import assert_duplicate_email_response, assert_user_not_found_response, assert_valid_user_response
+from tests.helpers import assert_duplicate_email_response, assert_user_not_found_response, assert_valid_user_response_admin
 
 
 def test_patch_user_name_success(client, admin_user, user_payload, patch_user):
@@ -17,7 +17,7 @@ def test_patch_user_name_success(client, admin_user, user_payload, patch_user):
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] != body_patch["name"]
@@ -38,7 +38,7 @@ def test_patch_user_email_success(client, admin_user, user_payload, patch_user):
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] == body_patch["name"]
@@ -59,7 +59,7 @@ def test_patch_user_age_success(client, admin_user, user_payload, patch_user):
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] == body_patch["name"]
@@ -80,7 +80,7 @@ def test_patch_user_name_email_success(client, admin_user, user_payload, patch_u
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] != body_patch["name"]
@@ -101,7 +101,7 @@ def test_patch_user_name_age_success(client, admin_user, user_payload, patch_use
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] != body_patch["name"]
@@ -122,7 +122,7 @@ def test_patch_user_email_age_success(client, admin_user, user_payload, patch_us
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] == body_patch["name"]
@@ -143,7 +143,7 @@ def test_patch_user_full_success(client, admin_user, user_payload, patch_user):
     assert register_response.status_code == 201
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert register_body["id"] == body_patch["id"]
     assert register_body["name"] != body_patch["name"]
@@ -176,7 +176,7 @@ def test_patch_reuse_email(client, user_payload, get_token, admin_user):
     assert delete_response.status_code == 204
     assert patch_response.status_code == 200
 
-    assert_valid_user_response(body_patch)
+    assert_valid_user_response_admin(body_patch)
 
     assert body_post_second["id"] == body_patch["id"]
     assert body_post_second["name"] == body_patch["name"]
