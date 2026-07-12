@@ -116,7 +116,7 @@ def user_payload():
 @pytest.fixture
 def patch_user(client):
     # El '*' obliga que todo lo que está a la derecha se pase con nombre
-    def _patch_user(*, name=False, email=False, age=False, headers=""):
+    def _patch_user(*, name=False, email=False, age=False, is_admin=False, user_id=0, headers=""):
         patch_payload: dict[str, Any] = {}
         if name:
             patch_payload["name"] = "Diego Armando"
@@ -125,7 +125,10 @@ def patch_user(client):
         if age:
             patch_payload["age"] = 36
 
-        return client.patch("/profile", json=patch_payload, headers=headers)
+        if is_admin:
+            return client.patch(f"/users/{user_id}", json=patch_payload, headers=headers)
+        else:
+            return client.patch("/profile", json=patch_payload, headers=headers)
 
     return _patch_user  # <-- Importante no olvidar esta línea
 

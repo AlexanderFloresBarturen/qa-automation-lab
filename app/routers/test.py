@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 
 from app.models.user_model import UserModel
-from app.schemas.user import UserResponse
+from app.schemas.user import UserDetailResponse
 from app.security.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/tests", tags=["Tests"])
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=UserDetailResponse)
 def get_me(current_user: UserModel = Depends(get_current_user)):
     return current_user
 

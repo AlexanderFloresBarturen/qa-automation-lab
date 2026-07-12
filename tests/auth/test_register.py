@@ -6,7 +6,7 @@ from tests.helpers import assert_valid_user_response
 
 
 # region POSITIVOS
-def test_create_user_success(client, valid_user_payload):
+def test_register_user_success(client, valid_user_payload):
     response = client.post("/auth/register", json=valid_user_payload)
     body = response.json()
 
@@ -23,7 +23,7 @@ def test_create_user_success(client, valid_user_payload):
 
 
 # region NEGATIVOS
-def test_create_user_duplicate_email(client, user_payload):
+def test_register_user_duplicate_email(client, user_payload):
     user_first = user_payload()
     user_second = user_payload()
 
@@ -41,7 +41,7 @@ def test_create_user_duplicate_email(client, user_payload):
     assert body_second["detail"] == "Email already exists"
 
 
-def test_create_user_name_too_short(client, valid_user_payload):
+def test_register_user_name_too_short(client, valid_user_payload):
     payload = valid_user_payload.copy()
     payload["name"] = "A"
 
@@ -56,7 +56,7 @@ def test_create_user_name_too_short(client, valid_user_payload):
     assert body["detail"][0]["loc"] == ["body", "name"]
 
 
-def test_create_user_missing_age(client):
+def test_register_user_missing_age(client):
     payload = {"name": "Alex", "email": "alex@gmail.com"}
 
     response = client.post("/auth/register", json=payload)
@@ -70,7 +70,7 @@ def test_create_user_missing_age(client):
     assert body["detail"][0]["loc"] == ["body", "age"]
 
 
-def test_create_user_empty_payload(client):
+def test_register_user_empty_payload(client):
     payload: dict[str, Any] = {}
 
     response = client.post("/auth/register", json=payload)
@@ -102,7 +102,7 @@ def test_create_user_empty_payload(client):
         ("Pass1!", "string_too_short", "String should have at least 8 characters"),
     ],
 )
-def test_create_user_invalid_password(client, user_payload, password, type, error_message):
+def test_register_user_invalid_password(client, user_payload, password, type, error_message):
     payload = user_payload(password=password)
     response = client.post("/auth/register", json=payload)
     body = response.json()

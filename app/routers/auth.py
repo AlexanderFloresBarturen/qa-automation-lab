@@ -10,7 +10,7 @@ from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.token_model import PasswordResetTokenModel
 from app.models.user_model import UserModel
-from app.schemas.user import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, ResetPasswordRequest, ResetPasswordResponse, UserCreate, UserResponse
+from app.schemas.auth import ForgotPasswordRequest, ForgotPasswordResponse, LoginResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse
 from app.security.jwt import create_access_token
 from app.security.password import hash_password, verify_password
 from app.services.email_service import send_password_reset_email
@@ -56,8 +56,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/register", response_model=UserResponse, status_code=201)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=RegisterResponse, status_code=201)
+def register_user(user: RegisterRequest, db: Session = Depends(get_db)):
     # Consultar si existe un usuario con ese correo
     existing_user = db.query(UserModel).filter(UserModel.email == user.email, UserModel.is_active.is_(True)).first()
 

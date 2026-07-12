@@ -3,19 +3,19 @@ from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
 from app.models.user_model import UserModel
-from app.schemas.user import UserPatch, UserResponse, UserUpdate
+from app.schemas.profile import ProfilePatch, ProfileResponse, ProfileUpdate
 from app.security.dependencies import get_current_user
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
 
 
-@router.get("/", response_model=UserResponse, status_code=200)
-def get_user(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.get("/", response_model=ProfileResponse, status_code=200)
+def get_user_profile(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     return current_user
 
 
 @router.delete("/", status_code=204)
-def delete_user(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_user_profile(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     current_user.is_active = False
 
     db.commit()
@@ -23,8 +23,8 @@ def delete_user(current_user: UserModel = Depends(get_current_user), db: Session
     return
 
 
-@router.put("/", response_model=UserResponse, status_code=200)
-def update_user(user: UserUpdate, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.put("/", response_model=ProfileResponse, status_code=200)
+def update_user_profile(user: ProfileUpdate, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     existing_email = db.query(UserModel).filter(UserModel.email == user.email, UserModel.id != current_user.id, UserModel.is_active.is_(True)).first()
 
     if existing_email:
@@ -40,8 +40,8 @@ def update_user(user: UserUpdate, current_user: UserModel = Depends(get_current_
     return current_user
 
 
-@router.patch("/", response_model=UserResponse, status_code=200)
-def partial_update_user(user: UserPatch, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.patch("/", response_model=ProfileResponse, status_code=200)
+def partial_update_user_profile(user: ProfilePatch, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Convierte user en un diccionario y solo incluye los campos que
     tienen un valor explicito asignado.
