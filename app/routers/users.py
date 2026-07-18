@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database.dependencies import get_db
 from app.models.role_model import RoleModel
 from app.models.user_model import UserModel
-from app.schemas.user import CreateUserRequest, PatchUserRequest, UpdateUserRequest, UserDetailResponse
+from app.schemas.user import CreateUserRequest, PatchUserRequest, UpdateUserRequest, UserDetailResponse, UserStatusRequest
 from app.security.dependencies import require_admin
 from app.security.password import hash_password
 
@@ -53,7 +53,7 @@ def create_user(user: CreateUserRequest, _: UserModel = Depends(require_admin), 
 
 @router.put("/{user_id}", response_model=UserDetailResponse, status_code=200)
 def update_user(user: UpdateUserRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
-    user_to_update = db.query(UserModel).filter(UserModel.id == user_id).first()
+    user_to_update = db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active.is_(True)).first()
 
     if user_to_update is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -75,15 +75,15 @@ def update_user(user: UpdateUserRequest, user_id: int = Path(gt=0), _: UserModel
 
 @router.patch("/{user_id}", response_model=UserDetailResponse, status_code=200)
 def partial_update_user(user: PatchUserRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
-    """
-    Convierte user en un diccionario y solo incluye los campos que
-    tienen un valor explicito asignado.
-    """
-    user_to_update = db.query(UserModel).filter(UserModel.id == user_id).first()
+    user_to_update = db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active.is_(True)).first()
 
     if user_to_update is None:
         raise HTTPException(status_code=404, detail="User not found")
 
+    """
+    Convierte user en un diccionario y solo incluye los campos que
+    tienen un valor explicito asignado.
+    """
     update_data = user.model_dump(exclude_unset=True)
 
     if "email" in update_data:
@@ -116,3 +116,21 @@ def delete_user(user_id: int = Path(gt=0), current_user: UserModel = Depends(req
     db.commit()
 
     return
+
+
+@router.patch("/{user_id}/status", response_model=UserDetailResponse, status_code=200)
+def update_user_status(status: UserStatusRequest, user_id: int = Path(gt=0), _: UserModel = Depends(require_admin), db: Session = Depends(get_db)):
+    user_to_update = db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active.is_(False)).first()
+
+    if user_to_update is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if status.is_active is False:
+        raise HTTPException(status_code=409, detail="User already deactivated")
+
+    user_to_update.is_active = status.is_active
+
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
