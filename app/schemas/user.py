@@ -53,3 +53,7 @@ class PatchUserRequest(BaseModel):
                 raise ValueError(f"Field {field} cannot be null")
 
         return self
+
+
+class UserStatusRequest(BaseModel):
+    is_active: bool
